@@ -18,7 +18,13 @@ int main(void){
 
 		glfwSwapBuffers(window);
 
-
+		glBegin(GL_POINTS);
+		glVertex2d(0, 0);
+		glVertex2d(0, 1);
+		glVertex2d(0, 2);
+		glVertex2d(0, 3);
+		glVertex2d(0, 4);
+		glEnd();
 		glfwPollEvents();
 	}
 
