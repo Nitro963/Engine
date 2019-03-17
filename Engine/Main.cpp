@@ -16,14 +16,14 @@ int main(void){
 	while (!glfwWindowShouldClose(window)){
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glfwSwapBuffers(window);
 
-		glBegin(GL_POINTS);
-		glVertex2d(0, 0);
-		glVertex2d(0, 1);
-		glVertex2d(0, 2);
-		glVertex2d(0, 3);
+		glBegin(GL_TRIANGLES);
+		glVertex2f(-0.5f, -0.5f);
+		glVertex2f(0, 0.5);
+		glVertex2f(0.5f, -0.5);
 		glEnd();
+
+		glfwSwapBuffers(window);
 
 		glfwPollEvents();
 	}
