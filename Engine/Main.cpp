@@ -23,8 +23,8 @@ int main(void){
 		glVertex2d(0, 1);
 		glVertex2d(0, 2);
 		glVertex2d(0, 3);
-		glVertex2d(0, 4);
 		glEnd();
+
 		glfwPollEvents();
 	}
 
