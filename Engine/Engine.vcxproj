@@ -123,12 +123,16 @@
     <ClCompile Include="aabb.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="BoundingSphere.cpp" />
+    <ClCompile Include="PhysicsEngine.cpp" />
+    <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="Plane.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aabb.h" />
     <ClInclude Include="IntersectData.h" />
     <ClInclude Include="BoundingSphere.h" />
+    <ClInclude Include="PhysicsEngine.h" />
+    <ClInclude Include="PhysicsObject.h" />
     <ClInclude Include="Plane.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
