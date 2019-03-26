@@ -10,8 +10,9 @@ public:
 	inline const glm::vec3& getAcceleration() const { return m_acceleration; }
 	inline const float getMass() const { return m_mass; }
 
-	void integrate();
+	void integrate(float frameRate);
 	void applyForce(const glm::vec3& force);
+	void reverseVelocity();
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_velocity;

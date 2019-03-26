@@ -45,9 +45,7 @@ int main(void){
 	physicsEngine pEngine(0.1);
 	pEngine.addObject(physicalObject(glm::vec3(0, 0, 0), 1));
 	pEngine.addObject(physicalObject(glm::vec3(0, 1e6 * 6.371 * -1, 0), 1e24 * 5.972));
-	
 	glm::vec4 clearColor(0 ,0 ,0 ,1.f);
-	
 	while (!glfwWindowShouldClose(window)){
 		glClear(GL_COLOR_BUFFER_BIT);
 		glfwSwapInterval(1);
