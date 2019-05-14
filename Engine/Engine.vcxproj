@@ -75,7 +75,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)Dependencies\Static Libraries;$(SolutionDir)Dependencies\glew-2.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>IMGUI_IMPL_OPENGL_LOADER_GLEW;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IMGUI_IMPL_OPENGL_LOADER_GLEW;GLEW_STATIC;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)Dependencies\glew-2.1.0\lib\Release\Win32;$(SolutionDir)Dependencies\Static Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -97,7 +97,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)Dependencies\Static Libraries;$(SolutionDir)Dependencies\glew-2.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>IMGUI_IMPL_OPENGL_LOADER_GLEW;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IMGUI_IMPL_OPENGL_LOADER_GLEW;GLEW_STATIC;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -120,26 +120,46 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="aabb.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="basic.cpp" />
     <ClCompile Include="BoundingSphere.cpp" />
-    <ClCompile Include="PhysicsEngine.cpp" />
-    <ClCompile Include="PhysicalObject.cpp" />
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="forceGen.cpp" />
+    <ClCompile Include="indexbuffer.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="OBB.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="RigidBody.cpp" />
+    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="skybox.cpp" />
+    <ClCompile Include="TestClearColor.cpp" />
+    <ClCompile Include="texture.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
     <ClCompile Include="vendor\imgui\imgui_demo.cpp" />
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
     <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp" />
     <ClCompile Include="vendor\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="vendor\stb_image\stb_image.cpp" />
+    <ClCompile Include="vertexarray.cpp" />
+    <ClCompile Include="vertexbuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="aabb.h" />
-    <ClInclude Include="IntersectData.h" />
+    <ClInclude Include="AABB.h" />
+    <ClInclude Include="basic.h" />
     <ClInclude Include="BoundingSphere.h" />
-    <ClInclude Include="PhysicsEngine.h" />
-    <ClInclude Include="PhysicalObject.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="forceGen.h" />
+    <ClInclude Include="Geometry.h" />
+    <ClInclude Include="indexbuffer.h" />
+    <ClInclude Include="OBB.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="RigidBody.h" />
+    <ClInclude Include="shader.h" />
+    <ClInclude Include="skybox.h" />
+    <ClInclude Include="Test.h" />
+    <ClInclude Include="TestClearColor.h" />
+    <ClInclude Include="texture.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
     <ClInclude Include="vendor\imgui\imgui.h" />
     <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />
@@ -148,6 +168,23 @@
     <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
+    <ClInclude Include="vendor\stb_image\stb_image.h" />
+    <ClInclude Include="vertexarray.h" />
+    <ClInclude Include="vertexbuffer.h" />
+    <ClInclude Include="vertexbufferlayout.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cubeMap.shader" />
+    <None Include="res\Shaders\Basic.shader" />
+    <None Include="res\Shaders\floor.shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_bk.tga" />
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_dn.tga" />
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_ft.tga" />
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_lf.tga" />
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_rt.tga" />
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_up.tga" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

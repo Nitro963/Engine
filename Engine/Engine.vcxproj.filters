@@ -19,24 +19,48 @@
     <Filter Include="Source Files\vendor\imgui">
       <UniqueIdentifier>{2a8f92a7-b03a-4a33-a914-c783f043a575}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\vendor\stb_image">
+      <UniqueIdentifier>{97da993a-e75a-40dc-b3c2-0b9fe41edc3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui">
+      <UniqueIdentifier>{aa500df7-f441-4722-bc20-73e05684bbd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Renderer">
+      <UniqueIdentifier>{298a6800-0e72-4e22-a323-f73e003b953a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Renderer">
+      <UniqueIdentifier>{10ac0853-bfda-4fd1-9482-d2832e223289}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\res">
+      <UniqueIdentifier>{f818b4af-96ec-45cf-9962-7c5f417a122b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Collision Detector">
+      <UniqueIdentifier>{b2d2789a-e8b9-4a23-adef-f54918a83442}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Collision Detector">
+      <UniqueIdentifier>{f9005f7a-442e-462a-9ad6-901dc6af9f8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\res\shaders">
+      <UniqueIdentifier>{9647f232-59db-4fb9-8126-0ad00add85f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\res\Textures">
+      <UniqueIdentifier>{beb7cbe8-0ba2-4f34-bddc-172f6001a596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\res\Textures\Skyboxs">
+      <UniqueIdentifier>{0359889f-e6f6-491d-ba11-98059a5278ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\res\Textures\Skyboxs\mp_met">
+      <UniqueIdentifier>{27485fe0-5a04-4392-8142-d217e47da891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tests">
+      <UniqueIdentifier>{6fa9f379-a5e1-4b3d-8976-34d24fa4af44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tests">
+      <UniqueIdentifier>{f5a9452b-ae7b-4cfd-b50d-077cfb5f9173}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BoundingSphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="aabb.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Plane.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicsEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicalObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vendor\imgui\imgui.cpp">
@@ -57,49 +81,167 @@
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
       <Filter>Source Files\vendor\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="RigidBody.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\stb_image\stb_image.cpp">
+      <Filter>Source Files\vendor\stb_image</Filter>
+    </ClCompile>
+    <ClCompile Include="basic.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="indexbuffer.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vertexarray.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vertexbuffer.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="AABB.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingSphere.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="OBB.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="skybox.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="forceGen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestClearColor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="IntersectData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BoundingSphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aabb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicsEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicalObject.h">
+    <ClInclude Include="RigidBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imconfig.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imgui.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imgui_impl_glfw.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imgui_internal.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imstb_rectpack.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imstb_textedit.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imstb_truetype.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="basic.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="indexbuffer.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb_image\stb_image.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vertexarray.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vertexbuffer.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vertexbufferlayout.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingSphere.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="OBB.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="forceGen.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Test.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestClearColor.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Shaders\Basic.shader">
+      <Filter>Resource Files\res\shaders</Filter>
+    </None>
+    <None Include="cubeMap.shader">
+      <Filter>Resource Files\res\shaders</Filter>
+    </None>
+    <None Include="res\Shaders\floor.shader">
+      <Filter>Resource Files\res\shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_bk.tga">
+      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
+    </Image>
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_dn.tga">
+      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
+    </Image>
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_ft.tga">
+      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
+    </Image>
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_lf.tga">
+      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
+    </Image>
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_rt.tga">
+      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
+    </Image>
+    <Image Include="res\Textures\SkyBoxs\mp_met\met_up.tga">
+      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
+    </Image>
   </ItemGroup>
 </Project>

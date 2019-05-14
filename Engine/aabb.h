@@ -1,17 +1,23 @@
-#ifndef AABB_INCLUDE
-#define AABB_INCLUDE
-#include"glm\glm.hpp"
-#include"IntersectData.h"
+#pragma once
+#ifndef AABB_H
+#define AABB_H
+#include"Geometry.h"
 
 class AABB {
 public:
-	AABB(const glm::vec3& minExtents ,const glm::vec3& maxExtents):m_minExtents(minExtents) ,m_maxExtents(maxExtents){}
-	inline const glm::vec3& getMinExtents() const { return m_minExtents; }
-	inline const glm::vec3& getMaxExtents() const { return m_maxExtents; }
-	intersectData intersectAABB(const AABB& other);
-private:
-	glm::vec3 m_minExtents;
-	glm::vec3 m_maxExtents;
-};
-#endif // !AABB_INCLUDE
+	AABB(const point& center, const glm::vec3& radius) :c(center) ,r(radius) {}
+	inline const point& getCenter() const { return c; }
+	inline const float getXRadius() const { return r[0]; }
+	inline const float getYRadius() const { return r[1]; }
+	inline const float getZRadius() const { return r[2]; }
+	bool testAABB(const AABB& b) const;
+	AABB updateAABB(const glm::mat3x3& rotation, const glm::vec3& translation) const;
+	point closestPoint(const point& p) const;
 
+private:
+	point c;
+	glm::vec3 r;
+
+};
+
+#endif // !AABB_H

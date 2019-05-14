@@ -1,16 +1,22 @@
-#ifndef BOUNDING_SPHERE
-#define BOUNDING_SPHERE
-#include "glm\glm.hpp"
-#include "IntersectData.h"
+#ifndef BOUNDINGSPHERE_H
+#define BOUNDINGSPHERE_H
+#include "Geometry.h"
+#include "AABB.h"
+#include "OBB.h"
 
 class boundingSphere {
 public:
-	inline boundingSphere(const glm::vec3& center, float radius) : m_center(center), m_radius(radius) {};
-	inline float getRadius() const { return m_radius; }
-	inline const glm::vec3 getCenter()const { return m_center; }
-	intersectData intersectBoundingSphere(boundingSphere& other);
+	boundingSphere(const point& c ,float r):c(c) ,r(r){}
+	inline const point& getCenter() const { return c; }
+	inline const float getRadius() const { return r; }
+	// Determine whether the sphere intersects sphere 
+	bool testSphere(const boundingSphere& b ,CollisionData& ret) const;
+	bool testAABB(const AABB& b) const;
+	bool testOBB(const OBB& b ,CollisionData& info) const;
+
+	point closestPoint(const point& p);
 private:
-	glm::vec3 m_center;
-	float m_radius;
+	point c;
+	float r;
 };
-#endif // !
+#endif // !BOUNDINGSPHERE_H
