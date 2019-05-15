@@ -178,14 +178,6 @@
     <None Include="res\Shaders\Basic.shader" />
     <None Include="res\Shaders\floor.shader" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_bk.tga" />
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_dn.tga" />
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_ft.tga" />
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_lf.tga" />
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_rt.tga" />
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_up.tga" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

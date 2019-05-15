@@ -49,9 +49,6 @@
     <Filter Include="Resource Files\res\Textures\Skyboxs">
       <UniqueIdentifier>{0359889f-e6f6-491d-ba11-98059a5278ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\res\Textures\Skyboxs\mp_met">
-      <UniqueIdentifier>{27485fe0-5a04-4392-8142-d217e47da891}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Tests">
       <UniqueIdentifier>{6fa9f379-a5e1-4b3d-8976-34d24fa4af44}</UniqueIdentifier>
     </Filter>
@@ -127,7 +124,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TestClearColor.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -207,10 +204,10 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Test.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files\Tests</Filter>
     </ClInclude>
     <ClInclude Include="TestClearColor.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -223,25 +220,5 @@
     <None Include="res\Shaders\floor.shader">
       <Filter>Resource Files\res\shaders</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_bk.tga">
-      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
-    </Image>
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_dn.tga">
-      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
-    </Image>
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_ft.tga">
-      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
-    </Image>
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_lf.tga">
-      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
-    </Image>
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_rt.tga">
-      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
-    </Image>
-    <Image Include="res\Textures\SkyBoxs\mp_met\met_up.tga">
-      <Filter>Resource Files\res\Textures\Skyboxs\mp_met</Filter>
-    </Image>
   </ItemGroup>
 </Project>

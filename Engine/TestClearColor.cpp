@@ -1,7 +1,7 @@
 #include "TestClearColor.h"
 
 namespace test {
-	TestClearColor::TestClearColor() : m_ClearColor{ 0.4 ,0.2 ,0.8 } {}
+	TestClearColor::TestClearColor() : m_ClearColor{ 0.4f ,0.2f ,0.8f } {}
 
 	void TestClearColor::OnUpdate(float deltaTime){}
 

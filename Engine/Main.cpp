@@ -278,7 +278,7 @@ int main() {
 			Floor::getInstance()->draw();
 			tex.unbind();
 
-			//cubeMap.draw();
+			cubeMap.draw();
 
 			GLCall(glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w));
 
