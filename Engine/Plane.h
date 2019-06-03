@@ -12,12 +12,18 @@ public:
 		n = glm::normalize(glm::cross(b - a, c - a));
 		d = glm::dot(n, a);
 	}
-
+	
+	//Given a point on the plane and a normal
+	plane(const point& a, const glm::vec3& n) {
+		this->n = glm::normalize(n);
+		d = glm::dot(n, a);
+	}
+	
 	//Points x on the plane satisfy Dot(n, x) = d
 	inline bool inside(const point& p) { return glm::abs(glm::dot(n, p) - d) < EPSILON; }
 	
 	// Determine whether the plane intersects sphere s
-	bool testSphere(const boundingSphere& s) const;
+	bool intersect(const boundingSphere& s) const;
 	
 	// Determine whether sphere s is fully behind (inside negative halfspace of) the plane
 	bool insideNegHalfSpace(const boundingSphere& s) const;
@@ -26,10 +32,16 @@ public:
 	bool intersectNegHalfSpace(const boundingSphere& s) const;
 	
 	// Test if OBB b intersects the plane
-	bool testOBB(const OBB& b) const;
+	bool intersect(const OBB& b) const;
 
-	// Test if AABB b intersects plane p
-	bool testAABB(const AABB& b) const;
+	// Test if AABB b intersects the plane
+	bool intersect(const AABB& b) const;
+
+	// Test if Line segement intersect the plane
+	bool intersect(const Line& seg) const;
+
+	// if Line segement intersect the plane return p the intersection point
+	bool clip(const Line& seg ,point& p) const;
 
 	// Given point p, return the point q on the plane that is closest to p
 	point closestPoint(const point& p) const;

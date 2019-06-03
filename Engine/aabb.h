@@ -10,7 +10,7 @@ public:
 	inline const float getXRadius() const { return r[0]; }
 	inline const float getYRadius() const { return r[1]; }
 	inline const float getZRadius() const { return r[2]; }
-	bool testAABB(const AABB& b) const;
+	bool intersect(const AABB& b) const;
 	AABB updateAABB(const glm::mat3x3& rotation, const glm::vec3& translation) const;
 	point closestPoint(const point& p) const;
 

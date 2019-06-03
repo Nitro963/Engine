@@ -5,6 +5,7 @@
 #include "vendor\imgui\imgui.h"
 namespace test {
 	class TestClearColor : public Test {
+	public:
 		TestClearColor();
 		virtual void OnUpdate(float deltaTime) override;
 		virtual void OnRender() override;

@@ -1,6 +1,6 @@
 #include "AABB.h"
 
-bool AABB::testAABB(const AABB & b) const{
+bool AABB::intersect(const AABB & b) const{
 	
 	if (glm::abs(c.x - b.getCenter().x) > getXRadius() + b.getXRadius()) return false;
 	if (glm::abs(c.y - b.getCenter().y) > getYRadius() + b.getYRadius()) return false;

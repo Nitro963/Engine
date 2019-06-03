@@ -5,9 +5,9 @@
 #pragma region staticVar
 std::vector<float> SolidSphere::vertices;
 std::vector<uint32_t> SolidSphere::indices;
-renderer::vertexbuffer* SolidSphere::VBO = nullptr;
-renderer::vertexarray* SolidSphere::VAO = nullptr;
-renderer::indexbuffer* SolidSphere::IBO = nullptr;
+std::unique_ptr<renderer::vertexbuffer>  SolidSphere::VBO = nullptr;
+std::unique_ptr<renderer::vertexarray> SolidSphere::VAO = nullptr;
+std::unique_ptr<renderer::indexbuffer> SolidSphere::IBO = nullptr;
 
 std::vector<float> SolidCuboid::vertices = { 
 -0.5f, -0.5f, -0.5f,
@@ -60,11 +60,10 @@ std::vector<uint32_t> SolidCuboid::indices = {
 	20 ,21 ,22,
 	22 ,23 ,20,
 };
-renderer::vertexbuffer* SolidCuboid::VBO = nullptr;
-renderer::vertexarray* SolidCuboid::VAO = nullptr;
-renderer::indexbuffer* SolidCuboid::IBO = nullptr;
+std::unique_ptr<renderer::vertexbuffer>  SolidCuboid::VBO = nullptr;
+std::unique_ptr<renderer::vertexarray> SolidCuboid::VAO = nullptr;
+std::unique_ptr<renderer::indexbuffer> SolidCuboid::IBO = nullptr;
 
-Floor* Floor::object = nullptr;
 #pragma endregion staticVar
 
 void addTriangle(std::vector<uint32_t>& indices, uint32_t a, uint32_t b, uint32_t c) {
@@ -82,7 +81,7 @@ void addQuad(std::vector<uint32_t>& indices, uint32_t a, uint32_t b, uint32_t c,
 		indices.push_back(d);
 }
 
-RigidBody::RigidBody(const float mass, const glm::mat3  tensorBody, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)), forceAccum(), torqueAccum() {
+RigidBody::RigidBody(const float mass, const glm::mat3  tensorBody, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)), forceAccum(), torqueAccum() ,colliderType(0) {
 	this->position = position;
 	this->orientation = orientation;
 	this->velocity = velocity;
@@ -96,6 +95,12 @@ RigidBody::RigidBody(const float mass, const glm::mat3  tensorBody, const glm::v
 }
 
 void RigidBody::integrate(float duration) {
+	if (glm::dot(velocity, velocity) < EPSILON)
+		velocity = glm::vec3(0);
+	
+	if (glm::dot(omega, omega) < EPSILON)
+		omega = glm::vec3(0);
+
 	position += velocity * duration;
 
 	orientation += glm::fquat(0 ,omega) * orientation * duration * 0.5f;
@@ -108,16 +113,25 @@ void RigidBody::integrate(float duration) {
 
 	calcDerivedQuantities();
 
+	syncColliders();
+
 	clearAccum();
+}
+
+void RigidBody::syncColliders(){
+	if (colliderType == 1)
+		collider1->sync(position);
+	if (colliderType == 2)
+		collider2->sync(position, rotationT);
 }
 
 void RigidBody::calcDerivedQuantities() {
 
-	velocity = linearMomentum * invMass;
+	velocity = linearMomentum * invMass * 0.8f;
 	rotation = glm::toMat3(orientation);
 	rotationT = glm::transpose(rotation);
 	invTensor = rotation * invTensorBody * rotationT;
-	omega = invTensor * angularMomentum;
+	omega = invTensor * angularMomentum * 0.8f;
 }
 
 void RigidBody::applyForce(const glm::vec3& point, const glm::vec3& force) {
@@ -140,7 +154,7 @@ point RigidBody::transformLocal(const point & pt) const {
 
 inline glm::mat3 SolidSphere::generateTensor(float mass, float radius) {
 	glm::mat3 tensor(0.f);
-	tensor[0][0] = tensor[1][1] = tensor[2][2] = mass * radius * 2 / 5;
+	tensor[0][0] = tensor[1][1] = tensor[2][2] = mass * radius * radius * 2 / 5;
 	return tensor;
 }
 
@@ -179,13 +193,15 @@ void SolidSphere::generateVertices(){
 SolidSphere::SolidSphere(const float mass, const float radius, const glm::vec3&  position, const glm::fquat&  orientation, const glm::vec3&  velocity, const glm::vec3&  omega) : RigidBody(mass, generateTensor(mass, radius), position, orientation, velocity, omega), radius(radius) { 
 	if (!VBO) {
 		generateVertices();
-		VBO = new renderer::vertexbuffer(&vertices[0], vertices.size() * sizeof(float));
+		VBO = std::make_unique<renderer::vertexbuffer>(&vertices[0], vertices.size() * sizeof(float));
 		renderer::vertexbufferlayout layout;
 		layout.push<float>(3);
-		VAO = new renderer::vertexarray();
+		VAO = std::make_unique<renderer::vertexarray>();
 		VAO->addbuffer(*VBO, layout);
-		IBO = new renderer::indexbuffer(&indices[0], indices.size());
+		IBO = std::make_unique<renderer::indexbuffer>(&indices[0], indices.size());
 	}
+	colliderType = 1;
+	collider1 = std::make_unique<boundingSphere>(position, radius);
 }
 
 void SolidSphere::applyForce(const glm::vec3& point, const glm::vec3& force) {
@@ -194,37 +210,7 @@ void SolidSphere::applyForce(const glm::vec3& point, const glm::vec3& force) {
 	RigidBody::applyForce(point, force);
 }
 
-bool SolidSphere::isColliding(SolidSphere* other, Contact* contactData){
-	boundingSphere BV1(position, radius);
-	boundingSphere BV2(other->position, other->radius);
-	CollisionData data;
-	if (BV1.testSphere(BV2, data)) {
-		contactData->a = this;
-		contactData->b = other;
-		contactData->normal = data.contactNormal;
-		contactData->point = data.collisionPoint;
-		//TODO 
-		//resolve interpentration
-		return true;
-	}
-	return false;
-}
-
-bool SolidSphere::isColliding(SolidCuboid * other, Contact * contactData){
-	boundingSphere BV1(position, radius);
-	OBB BV2(other->getPosition(), other->getRotationT(), other->getExtents() * 0.5f);
-	CollisionData data;
-	if(BV1.testOBB(BV2 ,data)){
-		contactData->a = other;
-		contactData->b = this;
-		contactData->normal = data.contactNormal;
-		contactData->point = data.collisionPoint;
-		return true;
-	}
-	return false;
-}
-
-void SolidSphere::draw(){
+void SolidSphere::render(){
 	GLCall(glEnable(GL_PRIMITIVE_RESTART));
 	glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX);
 	VAO->bind();
@@ -245,13 +231,15 @@ inline glm::mat3 SolidCuboid::generateTensor(float mass, const glm::vec3 & exten
 
 SolidCuboid::SolidCuboid(const float mass, const glm::vec3& extents, const glm::vec3 & position, const glm::fquat & orientation, const glm::vec3 & velocity, const glm::vec3 & omega) : RigidBody(mass, generateTensor(mass, extents), position, orientation, velocity, omega), extents(extents) {
 	if (!VBO) {
-		VBO = new renderer::vertexbuffer(&vertices[0], vertices.size() * sizeof(float));
+		VBO = std::make_unique<renderer::vertexbuffer>(&vertices[0], vertices.size() * sizeof(float));
 		renderer::vertexbufferlayout layout;
 		layout.push<float>(3);
-		VAO = new renderer::vertexarray();
+		VAO = std::make_unique<renderer::vertexarray>();
 		VAO->addbuffer(*VBO, layout);
-		IBO = new renderer::indexbuffer(&indices[0], indices.size());
+		IBO = std::make_unique<renderer::indexbuffer>(&indices[0], indices.size());
 	}
+	colliderType = 2;
+	collider2 = std::make_unique<OBB>(position, rotationT, extents * 0.5f);
 }
 
 void SolidCuboid::applyForce(const glm::vec3 & point, const glm::vec3 & force){
@@ -261,7 +249,7 @@ void SolidCuboid::applyForce(const glm::vec3 & point, const glm::vec3 & force){
 	RigidBody::applyForce(point, force);
 }
 
-void SolidCuboid::draw(){
+void SolidCuboid::render(){
 	VAO->bind();
 	IBO->bind();
 	GLCall(glDrawElements(GL_TRIANGLES, IBO->getcount(), GL_UNSIGNED_INT, NULL));
@@ -269,61 +257,94 @@ void SolidCuboid::draw(){
 	IBO->unbind();
 }
 
-bool isColliding(Contact * c){
-	glm::vec3 velA = c->a->getParticleVelocity(c->point);
-	glm::vec3 velB = c->b->getParticleVelocity(c->point);
-	float vrel = glm::dot(c->normal, velA - velB);
-	if (vrel < EPSILON)
-		return true;
-	return false;
+void applyImpulse(Contact* contact, float epsilon) {
+	for (const auto& p : contact->M->contacts) {
+
+		float invMassSum = contact->A->invMass + contact->B->invMass;
+
+		if (invMassSum < EPSILON)
+			return; // Both objects have infinite mass!
+
+		glm::vec3 ra = contact->A->transformWorld(p);
+		glm::vec3 rb = contact->B->transformWorld(p);
+
+		glm::vec3 relativeVel = contact->B->getParticleVelocity(p) - contact->A->getParticleVelocity(p);
+		float vrel = glm::dot(relativeVel, contact->M->normal);
+		// if the objects are Moving away from each other at p we will skip it 
+		if (vrel > 0.f)
+			continue;
+		//if (glm::abs(vrel < EPSILON))
+			//continue;
+		float numerator = -(1.f + epsilon) * vrel;
+
+		glm::vec3 term1 = glm::cross(contact->A->invTensor * glm::cross(ra, contact->M->normal), ra);
+		glm::vec3 term2 = glm::cross(contact->B->invTensor * glm::cross(rb, contact->M->normal), rb);
+		float denominator = invMassSum + glm::dot(contact->M->normal, term1 + term2);
+
+		if (glm::abs(denominator) < EPSILON)
+			continue;
+
+		float j = numerator / denominator;
+		
+		//if (glm::abs(j) > EPSILON)
+		//	j = j / M.contacts.size();
+
+		glm::vec3 impulse = j * contact->M->normal;
+		glm::vec3 torqueA = glm::cross(ra, impulse);
+		glm::vec3 torqueB = glm::cross(rb, impulse);
+
+		//update linear velocity
+		contact->A->velocity -= impulse *  contact->A->invMass;
+		contact->B->velocity += impulse *  contact->B->invMass;
+		//update angular velocity
+		contact->A->omega -= contact->A->invTensor * glm::cross(ra, impulse);
+		contact->B->omega += contact->B->invTensor * glm::cross(rb, impulse);
+
+		//update momentum
+		contact->A->linearMomentum -= impulse;
+		contact->A->angularMomentum -= torqueA;
+		contact->B->linearMomentum += impulse;
+		contact->B->angularMomentum += torqueB;
+	}
 }
 
-void handelCollision(Contact * c, float epsilon){
-	glm::vec3 velA = c->a->getParticleVelocity(c->point);
-	glm::vec3 velB = c->b->getParticleVelocity(c->point);
-	float vrel = glm::dot(c->normal, velA - velB);
-	if (vrel > EPSILON)
-		return;
-	glm::vec3 ra = c->point - c->a->getPosition();
-	glm::vec3 rb = c->point - c->b->getPosition();
-	float numerator = -(1 + epsilon) * vrel;
-
-	float term1 = c->a->getInverseMass();
-	float term2 = c->b->getInverseMass();
-	float term3 = glm::dot(c->normal, glm::cross(c->a->getInverseTensor() * glm::cross(ra, c->normal), ra));
-	float term4 = glm::dot(c->normal, glm::cross(c->b->getInverseTensor() * glm::cross(rb, c->normal), rb));
-
-	float j = numerator / (term1 + term2 + term3 + term4);
-
-	glm::vec3 force = j * c->normal;
-	glm::vec3 torqueA = glm::cross(c->a->transformWorld(c->point), force);
-	glm::vec3 torqueB = glm::cross(c->b->transformWorld(c->point), -force);
-
-	c->a->setLinearMomentum(force + c->a->getLinearMomentum());
-	c->b->setLinearMomentum(-force + c->b->getLinearMomentum());
-	c->a->setAngularMomentum(torqueA + c->a->getAngularMomentum());
-	c->b->setAngularMomentum(torqueB + c->b->getAngularMomentum());
-	glm::vec3 vel = c->a->getLinearMomentum() * c->a->getInverseMass();
-	c->a->setVelocity(vel);
-	vel = c->b->getLinearMomentum() * c->b->getInverseMass();
-	c->b->setVelocity(vel);
-
-	vel = c->a->getInverseTensor() * c->a->getAngularMomentum();
-	c->a->setAngularVelocity(vel);
-	vel = c->b->getInverseTensor() * c->b->getAngularMomentum();
-	c->b->setAngularVelocity(vel);
+void resolveInterpentration(Contact* contact){
+	float depth = glm::max(contact->M->depth , 0.f);
+	float scaler = depth / (contact->A->invMass + contact->B->invMass);
+	glm::vec3 correction = scaler * contact->M->normal * 0.45f;
+	contact->A->position -= correction * contact->A->invMass;
+	contact->B->position += correction * contact->B->invMass;
+	
+	contact->A->syncColliders();
+	contact->B->syncColliders();
 }
 
-Floor * Floor::getInstance(){
-	if (!object)
-		return object = new Floor();
-	else
-		return object;
-}
-
-bool Floor::isColliding(SolidSphere * other, Contact * contactData){
-	boundingSphere BV(other->getPosition(), other->getRadius());
-	if (collider.testSphere(BV))
-		return true;
-	return false;
+std::vector<Contact*> searchForContacts(std::vector<RigidBody*>& bodies){
+	std::vector<Contact*> ve;
+	for(int i = 0 ; i < bodies.size();i++)
+		for (int j = i + 1; j < bodies.size(); j++) {
+			RigidBody* A = bodies[i];
+			RigidBody* B = bodies[j];
+			int typeA = A->colliderType;
+			int typeB = B->colliderType;
+			CollisionManifold M;
+			bool flip = 0;
+			if (typeA == 1)
+				if (typeB == 1)
+					M = A->collider1->findCollisionFeatures(*B->collider1);
+				else
+					M = A->collider1->findCollisionFeatures(*B->collider2);
+			else
+				if (typeB == 1)
+					M = B->collider1->findCollisionFeatures(*A->collider2), flip = 1;
+				else
+					M = A->collider2->findCollisionFeatures(*B->collider2);
+			if (M.colliding)
+				if (!flip)
+					ve.push_back(new Contact(A, B, new CollisionManifold(M)));	
+				else
+					ve.push_back(new Contact(B, A, new CollisionManifold(M)));
+				
+		}
+	return ve;
 }

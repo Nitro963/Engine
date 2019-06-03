@@ -132,7 +132,10 @@
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="skybox.cpp" />
+    <ClCompile Include="Test.cpp" />
     <ClCompile Include="TestClearColor.cpp" />
+    <ClCompile Include="TestFloor.cpp" />
+    <ClCompile Include="TestQubes.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
     <ClCompile Include="vendor\imgui\imgui_demo.cpp" />
@@ -159,6 +162,8 @@
     <ClInclude Include="skybox.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="TestClearColor.h" />
+    <ClInclude Include="TestFloor.h" />
+    <ClInclude Include="TestQubes.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
     <ClInclude Include="vendor\imgui\imgui.h" />

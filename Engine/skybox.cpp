@@ -57,7 +57,7 @@ namespace renderer {
 			VAO->addbuffer(*VBO, layout);
 			shad = new shader("res/shaders/cubeMap.shader");
 		}
-
+		stbi_set_flip_vertically_on_load(0);
 		GLCall(glGenTextures(1, &m_id));
 		GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, m_id));
 		int width, height, nrChannels;

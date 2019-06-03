@@ -126,6 +126,15 @@
     <ClCompile Include="TestClearColor.cpp">
       <Filter>Source Files\Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Test.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="TestFloor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestQubes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RigidBody.h">
@@ -207,7 +216,13 @@
       <Filter>Header Files\Tests</Filter>
     </ClInclude>
     <ClInclude Include="TestClearColor.h">
-      <Filter>Source Files\Tests</Filter>
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="TestFloor.h">
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="TestQubes.h">
+      <Filter>Header Files\Tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
