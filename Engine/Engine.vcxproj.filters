@@ -129,11 +129,11 @@
     <ClCompile Include="Test.cpp">
       <Filter>Source Files\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="TestFloor.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="OctTree.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
     </ClCompile>
-    <ClCompile Include="TestQubes.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Demo1.cpp">
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -218,10 +218,10 @@
     <ClInclude Include="TestClearColor.h">
       <Filter>Header Files\Tests</Filter>
     </ClInclude>
-    <ClInclude Include="TestFloor.h">
-      <Filter>Header Files\Tests</Filter>
+    <ClInclude Include="OctTree.h">
+      <Filter>Header Files\Collision Detector</Filter>
     </ClInclude>
-    <ClInclude Include="TestQubes.h">
+    <ClInclude Include="Demo1.h">
       <Filter>Header Files\Tests</Filter>
     </ClInclude>
   </ItemGroup>

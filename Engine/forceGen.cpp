@@ -5,8 +5,24 @@ void ForceRegistry::add(RigidBody * body, ForceGenerator * fg){
 	registrations.push_back(ForceRegistration(body, fg));
 }
 
-void ForceRegistry::remove(RigidBody * body, ForceGenerator * fg){
-	registrations.remove(ForceRegistration(body, fg));
+void ForceRegistry::remove_if(bool (*fun)(RigidBody*&)){
+	for (auto it = registrations.begin(); it != registrations.end(); ++it) {
+		if (fun(it->body)) {
+			auto tmp = it;
+			++it;
+			registrations.erase(tmp);
+		}
+	}
+}
+
+void ForceRegistry::remove_if(bool(*fun)(ForceRegistration &R)){
+	for (auto it = registrations.begin(); it != registrations.end(); ++it) {
+		if (fun(*it)) {
+			auto tmp = it;
+			++it;
+			registrations.erase(tmp);
+		}
+	}
 }
 
 void ForceRegistry::clear(){
@@ -14,11 +30,11 @@ void ForceRegistry::clear(){
 }
 
 void ForceRegistry::updateForces(float duration){
-	for (auto reg : registrations)
-		reg.fg->updateForce(reg.body ,duration);
+	for (auto& reg : registrations)
+		reg.fg->updateForce(reg.body, duration);
 }
 
-void GravityForce::updateForce(RigidBody * body ,float duration){
+void GravityForce::updateForce(RigidBody * body, float duration){
 	body->applyForce(gravity * body->getMass());
 }
 
@@ -35,9 +51,9 @@ void DragForce::updateForce(RigidBody * RigidBody, float duration){
 
 void Spring::updateForce(RigidBody * RigidBody, float duration){
 	// Calculate the vector of the spring.
-	glm::vec3 force = RigidBody->transformLocal(*connectionPoint);
+	glm::vec3 force = RigidBody->transformInverse(*connectionPoint);
 
-	force -= other->transformLocal(*otherConnectionPoint);
+	force -= other->transformInverse(*otherConnectionPoint);
 
 	float magnitude = glm::length(force);
 	magnitude =	glm::abs(magnitude - restLength);
@@ -45,13 +61,13 @@ void Spring::updateForce(RigidBody * RigidBody, float duration){
 	// Calculate the final force and apply it.
 	force = glm::normalize(force);
 	force *= -magnitude;
-	RigidBody->applyForce(*connectionPoint ,force);
+	RigidBody->applyForce(*connectionPoint, force);
 	other->applyForce(*otherConnectionPoint, -force);
 }
 
 void AnchoredSpring::updateForce(RigidBody * RigidBody, float duration){
 	// Calculate the vector of the spring.
-	glm::vec3 force = RigidBody->transformLocal(*connectionPoint);
+	glm::vec3 force = RigidBody->transformInverse(*connectionPoint);
 	force -= *anchor;
 
 	// Calculate the magnitude of the force.
@@ -62,12 +78,12 @@ void AnchoredSpring::updateForce(RigidBody * RigidBody, float duration){
 	// Calculate the final force and apply it.
 	force = glm::normalize(force);
 	force *= -magnitude;
-	RigidBody->applyForce(*connectionPoint ,force);
+	RigidBody->applyForce(*connectionPoint, force);
 }
 
 void FakeSpring::updateForce(RigidBody * rigidBody, float duration){
 	// Calculate the relative position of the particle to the anchor.
-	glm::vec3 position = rigidBody->transformLocal(connectionPoint) - *initialPosition;
+	glm::vec3 position = rigidBody->transformInverse(connectionPoint) - *initialPosition;
 	position -= *anchor;
 	// Calculate the constants and check whether they are in bounds.
 	float gamma = 0.5f * glm::sqrt(4 * springConstant - damping*damping);

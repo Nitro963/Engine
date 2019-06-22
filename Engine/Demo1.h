@@ -1,5 +1,5 @@
-#ifndef TESTQUBE_H
-#define TESTQUBE_H
+#ifndef SPHEREDEMO_H
+#define SPHEREDEMO_H
 #include "Test.h"
 #include "RigidBody.h"
 #include "forceGen.h"
@@ -10,21 +10,30 @@
 #include "camera.h"
 #include "skybox.h"
 #include "texture.h"
+#include "OctTree.h"
 
 extern renderer::camera camera;
 
 namespace test {
-	class Demo :public Test {
+	class Demo1 :public Test {
 	public:
-		Demo();
-		~Demo();
+		Demo1();
+		void init();
+		void reset();
+		~Demo1();
 		void OnRender() override;
 		void OnImGuiRender() override;
 	private:
-		std::vector<RigidBody*> bodies;
+		bool update = 0;
+		bool debugRender = 0;
+		float mass = 1;
+		float rad = 1;
+		glm::vec3 pos = glm::vec3(0, 3, 0);
+		glm::vec3 extents = glm::vec3(1.f);
+		std::list<RigidBody*> bodies;
+		OcTree* tree;
+		ForceRegistry registry;
 		renderer::shader* mainShader;
-		glm::vec3 force;
-		glm::vec3 point;
 	};
 }
 #endif // !TESTQUBE_H

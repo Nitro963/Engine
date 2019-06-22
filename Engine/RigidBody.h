@@ -16,8 +16,9 @@
 #include "BoundingSphere.h"
 #include "Plane.h"
 #include "texture.h"
+#include "Test.h"
 
-struct Contact;
+struct ContactData;
 class RigidBody {
 public:
 
@@ -32,9 +33,9 @@ public:
 
 	void applyForce(const glm::vec3& force);
 
-	point transformWorld(const point& pt) const;
+	point transform(const point& pt) const;
 
-	point transformLocal(const point& pt) const;
+	point transformInverse(const point& pt) const;
 
 	inline const glm::vec3& getPosition() const { return position; }
 
@@ -46,14 +47,19 @@ public:
 
 	inline const glm::vec3& getVelocity() const { return velocity; }
 
-	inline const glm::vec3& getAngularMomentum() const { return angularMomentum; }
+	//inline const glm::vec3& getAngularMomentum() const { return angularMomentum; }
 
-	inline const glm::vec3& getLinearMomentum() const { return linearMomentum; }
+	//inline const glm::vec3& getLinearMomentum() const { return linearMomentum; }
 
 	inline const glm::fquat& getOrientation() const { return orientation; }
+
+	inline const std::unique_ptr<BoundingSphere>& const getCollider1() { return collider1; }
+
+	inline const std::unique_ptr<OBB>& const getCollider2() { return collider2; }
+
 	//point in world space
 	const glm::vec3 getParticleVelocity(const glm::vec3& point) const {
-		return velocity + glm::cross(omega, transformWorld(point));
+		return velocity + glm::cross(omega, transform(point));
 	}
 	
 	inline const float getInverseMass() const{ return invMass; }
@@ -64,48 +70,54 @@ public:
 
 	inline virtual const glm::mat4 getModel(glm::vec3 scaler) const { return glm::identity<glm::mat4>(); }
 	
-	virtual void render() {};
+	inline void kill() { alive = 0; }
+
+	inline bool isAwake() { return awake; }
+
+	inline bool isDead() { return !alive; }
+
+	virtual void render() const {};
 	
+	friend void applyImpulse(ContactData* contact, float epsilon);
 
-	friend void applyImpulse(Contact* contact, float epsilon);
-
-	friend void resolveInterpentration(Contact* contact);
-
-	friend std::vector<Contact*> searchForContacts(std::vector<RigidBody*>& bodies);
-
+	friend void resolveInterpentration(ContactData* contact);
+	
 protected:
 	glm::vec3 position;
 	glm::fquat orientation;
-	glm::vec3 linearMomentum;
-	glm::vec3 angularMomentum;
+	glm::vec3 velocity;
+	glm::vec3 omega;
+	//glm::vec3 linearMomentum;
+	//glm::vec3 angularMomentum;
 
 	glm::mat3 invTensor;
 	glm::mat3 rotation;
 	glm::mat3 rotationT;
-	glm::vec3 velocity;
-	glm::vec3 omega;
 
-	int colliderType;
-	std::unique_ptr<boundingSphere> collider1;
-	std::unique_ptr<OBB> collider2;
 
 	//constant variable
-	const glm::mat3 tensorBody;
-	const glm::mat3 invTensorBody;
-	const float invMass;
+	glm::mat3 tensorBody;
+	glm::mat3 invTensorBody;
+	float invMass;
 
 	glm::vec3 forceAccum;
 	glm::vec3 torqueAccum;
+
+	//int colliderType;
+	std::unique_ptr<BoundingSphere> collider1;
+	std::unique_ptr<OBB> collider2;
+	
+	bool awake;
+	bool alive;
 
 	void calcDerivedQuantities();
 
 	inline void clearAccum() { forceAccum[0] = forceAccum[1] = forceAccum[2] = torqueAccum[0] = torqueAccum[1] = torqueAccum[2] = 0; }
 };
 
-class SolidCuboid;
 class SolidSphere : public RigidBody{
 public:
-	SolidSphere(const float mass, const float radius, const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f) ,glm::vec3(0 ,0 ,1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
+	SolidSphere(const float mass, const float radius, const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
 	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
 	
@@ -118,24 +130,24 @@ public:
 		return model;
 	};
 
-	virtual void render() override;
+	virtual void render() const override;
+	static void generateVertices();
+
 private:
 	const float radius;
 
 	inline static glm::mat3 generateTensor(float mass, float radius);
-	static void generateVertices();
 
 	static std::vector<float> vertices;
-	static std::vector<uint32_t> indices;
-	static std::unique_ptr<renderer::vertexbuffer> VBO;
-	static std::unique_ptr<renderer::vertexarray> VAO;
-	static std::unique_ptr<renderer::indexbuffer> IBO;
-
+	static std::vector<unsigned int> indices;
+	std::unique_ptr<renderer::vertexbuffer> VBO;
+	std::unique_ptr<renderer::vertexarray> VAO;
+	std::unique_ptr<renderer::indexbuffer> IBO;
 };
 
 class SolidCuboid : public RigidBody{
 public:
-	SolidCuboid(const float mass, const glm::vec3& extens, const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
+	SolidCuboid(const float mass, const glm::vec3& extens, const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
 	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
 
@@ -148,31 +160,29 @@ public:
 		return model;
 	};
 
-	virtual void render() override;
+	virtual void render() const override;
+
 private:
 	glm::vec3 extents;
 	inline static glm::mat3 generateTensor(float mass, const glm::vec3& extents);
 
 	static std::vector<float> vertices;
-	static std::vector<uint32_t> indices;
-
-	static std::unique_ptr<renderer::vertexbuffer> VBO;
-	static std::unique_ptr<renderer::vertexarray> VAO;
-	static std::unique_ptr<renderer::indexbuffer> IBO;
+	static std::vector<unsigned int> indices;
+	std::unique_ptr<renderer::vertexbuffer> VBO;
+	std::unique_ptr<renderer::vertexarray> VAO;
+	std::unique_ptr<renderer::indexbuffer> IBO;
 };
 
-struct Contact {
+struct ContactData {
 	RigidBody* A;
 	RigidBody* B;
 	const CollisionManifold* M;
 
-	Contact(RigidBody* A, RigidBody* B, const CollisionManifold* M) : A(A), B(B), M(M) {}
+	ContactData(RigidBody* A, RigidBody* B, const CollisionManifold* M) : A(A), B(B), M(M) {}
+	~ContactData() { delete M; }
 };
 
-void applyImpulse(Contact* contact, float epsilon);
+void applyImpulse(ContactData* contact, float epsilon);
 
-void resolveInterpentration(Contact* contact);
-
-std::vector<Contact*> searchForContacts(std::vector<RigidBody*>& bodies);
-
+void resolveInterpentration(ContactData* contact);
 #endif // !RIGID_BODY_H

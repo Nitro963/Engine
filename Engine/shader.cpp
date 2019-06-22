@@ -101,7 +101,7 @@ namespace renderer {
 				ss[(int)type] << line << '\n';
 			}
 		}
-		return{ ss[0].str() ,ss[1].str() };
+		return{ ss[0].str(), ss[1].str() };
 	}
 
 	unsigned int shader::compileshader(unsigned int type, const std::string & source) {

@@ -4,14 +4,13 @@
 #include "AABB.h"
 #include "OBB.h"
 
-class boundingSphere {
+class BoundingSphere {
 public:
-	boundingSphere(const point& c ,float r):c(c) ,r(r){}
-	inline const point& getCenter() const { return c; }
-	inline const float getRadius() const { return r; }
+	//Given Sphere center and radius
+	BoundingSphere(const point& c, float r):c(c), r(r){}
 
 	//generate contacts
-	CollisionManifold findCollisionFeatures(const boundingSphere& b) const;
+	CollisionManifold findCollisionFeatures(const BoundingSphere& b) const;
 
 	CollisionManifold findCollisionFeatures(const OBB& b) const;
 
@@ -21,16 +20,18 @@ public:
 	void sync(const point& c);
 	void update(const point& c, float r);
 
-	friend class OBB;
 private:
 	// Determine whether the sphere intersects sphere b
-	bool intersect(const boundingSphere& b) const;
-	// Determine whether the sphere intersects AABB b
-	bool intersect(const AABB& b) const;
+	bool intersect(const BoundingSphere& b) const;
+
 	// Determine whether the sphere intersects OBB b
 	bool intersect(const OBB& b) const;
+	
+	point c;// Sphere center
+	float r;// Spherer radius
 
-	point c;
-	float r;
+	friend class OBB;
+	friend class Plane;
+	friend class AABB;
 };
 #endif // !BOUNDINGSPHERE_H

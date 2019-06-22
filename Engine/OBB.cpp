@@ -1,62 +1,68 @@
 #include "OBB.h"
 #include "BoundingSphere.h"
 #include "Plane.h"
-#include <set>
-std::vector<point> OBB::getVertices() const {
-	std::vector<point> ve;
+
+std::vector<point> OBB::getVertices() const{
+	std::vector<glm::vec3> ve;
 
 	ve.push_back(c + u[0] * halfExtents[0] + u[1] * halfExtents[1] + u[2] * halfExtents[2]);
 	ve.push_back(c - u[0] * halfExtents[0] + u[1] * halfExtents[1] + u[2] * halfExtents[2]);
-
 	ve.push_back(c + u[0] * halfExtents[0] - u[1] * halfExtents[1] + u[2] * halfExtents[2]);
 	ve.push_back(c + u[0] * halfExtents[0] + u[1] * halfExtents[1] - u[2] * halfExtents[2]);
-
 	ve.push_back(c - u[0] * halfExtents[0] - u[1] * halfExtents[1] - u[2] * halfExtents[2]);
 	ve.push_back(c + u[0] * halfExtents[0] - u[1] * halfExtents[1] - u[2] * halfExtents[2]);
-
 	ve.push_back(c - u[0] * halfExtents[0] + u[1] * halfExtents[1] - u[2] * halfExtents[2]);
 	ve.push_back(c - u[0] * halfExtents[0] - u[1] * halfExtents[1] + u[2] * halfExtents[2]);
+
 	return ve;
 }
 
-std::vector<Line> OBB::getEdges() const {
+std::vector<Line> OBB::getEdges() const{
+	std::vector<Line> res;
 	std::vector<point> vertices = getVertices();
-	std::vector<Line> ve;
+
 	unsigned int indices[12][2] = {
-		{ 0 ,1 },{ 0 ,3 },{ 0 ,2 },
-		{ 1 ,6 },{ 1 ,7 },{ 2 ,7 },
-		{ 2 ,5 },{ 3 ,6 },{ 5 ,3 },
-		{ 4 ,7 },{ 4 ,6 },{ 4 ,5 }
+		{ 0, 1 },{ 0, 3 },{ 0, 2 },
+		{ 1, 6 },{ 1, 7 },{ 2, 7 },
+		{ 2, 5 },{ 5, 3 },{ 3, 6 },
+		{ 4, 7 },{ 4, 6 },{ 4, 5 }
 	};
+
 	for (int i = 0; i < 12; i++)
-		ve.push_back(Line(vertices[indices[i][0]], vertices[indices[i][1]]));
+		res.push_back(Line(vertices[indices[i][0]], vertices[indices[i][1]]));
+
+	return res;
+}
+
+std::vector<Plane> OBB::getFaces() const{
+
+	std::vector<Plane> ve;
+
+	ve.push_back(Plane(u[0], c + u[0] * halfExtents[0]));
+	ve.push_back(Plane(-u[0], c - u[0] * halfExtents[0]));
+
+	ve.push_back(Plane(u[1], c + u[1] * halfExtents[1]));
+	ve.push_back(Plane(-u[1], c - u[1] * halfExtents[1]));
+	
+	ve.push_back(Plane(u[2], c + u[2] * halfExtents[2]));
+	ve.push_back(Plane(-u[2], c - u[2] * halfExtents[2]));
+
 	return ve;
 }
 
-std::vector<plane> OBB::getFaces() const {
-	std::vector<plane> ve;
-	ve.push_back(plane(u[0], c + u[0] * halfExtents[0]));
-	ve.push_back(plane(-u[0], c - u[0] * halfExtents[0]));
-	ve.push_back(plane(u[1], c + u[1] * halfExtents[1]));
-	ve.push_back(plane(-u[1], c - u[1] * halfExtents[1]));
-	ve.push_back(plane(u[2], c + u[2] * halfExtents[2]));
-	ve.push_back(plane(-u[2], c - u[2] * halfExtents[2]));
-	return ve;
-}
+std::set<point, cmpPoint> OBB::clipEdges(const std::vector<Line>& edges) const{
 
-std::set<point, cmpPoint> OBB::clipEdges(std::vector<Line>& edges) const {
-	std::set<point, cmpPoint> se;
-	std::vector<plane> faces = getFaces();
-	for (const auto& face : faces) {
-		for (const auto& edge : edges) {
-			point p;
-			if (face.clip(edge, p)) {
-				if (containsPoint(p))
-					se.insert(p);
-			}
-		}
-	}
-	return se;
+	std::set<point, cmpPoint> res;
+	point intersection = point(0, 0, 0);
+	
+	std::vector<Plane>& planes = getFaces();
+	for (int i = 0; i < planes.size(); i++)
+		for (int j = 0; j < edges.size(); j++)
+			if (planes[i].clip(edges[j], intersection))//clip the edge to face plane
+				if (contains(intersection))//check if the intersection point is in or on the obb
+					res.insert(intersection);
+					
+	return res;
 }
 
 point OBB::closestPoint(const point & p) const {
@@ -76,57 +82,46 @@ point OBB::closestPoint(const point & p) const {
 	return q;
 }
 
-bool OBB::containsPoint(const point & p) const {
-	for (int i = 0; i < 3; i++) {
-		// project p on each axis to get distance
-		float d = glm::dot(p, u[i]);
-		// check if p project outside the box
-		if (d > halfExtents[i])
-			return false;
-		if (d < -halfExtents[i])
-			return false;
-	}
-	return true;
-}
-
 CollisionManifold OBB::findCollisionFeatures(const OBB & b) const {
-	CollisionManifold res;
-	glm::vec3 test[15] = {
-		u[0] ,u[1] ,u[2],b.u[0] ,b.u[1] ,b.u[2]
+	CollisionManifold res; // Will return intersection Data!
+
+	glm::vec3 axis[15] = {
+		u[0], u[1], u[2],
+		b.u[0], b.u[1], b.u[2]
 	};
-	for (int i = 0; i < 3; i++) {
-		test[6 + 3 * i] = glm::cross(test[i], test[3]);
-		test[6 + 3 * i + 1] = glm::cross(test[i], test[4]);
-		test[6 + 3 * i + 2] = glm::cross(test[i], test[5]);
+
+	for (int i = 0; i < 3; ++i) {
+		axis[6 + i * 3] = glm::cross(axis[i], axis[3]);
+		axis[6 + i * 3 + 1] = glm::cross(axis[i], axis[4]);
+		axis[6 + i * 3 + 2] = glm::cross(axis[i], axis[5]);
 	}
 
-	for (const auto& axis : test) {
-		bool flip = 0;
-		if (glm::dot(axis, axis) < EPSILON2)
+	for (int i = 0; i < 15; ++i) {
+		bool shouldFlip = 0;
+		// check if axis squared length = 0
+		if (glm::dot(axis[i], axis[i])< EPSILON2)
 			continue;
-		float depth = penetrationDepth(b, axis, flip);
-		if (depth < EPSILON)
-			return res.colliding = false, res;
-		if (depth < res.depth) {
-			res.depth = depth;
-			res.normal = glm::normalize((flip ? -1.f * axis : axis));
-		}
-	}
+		axis[i] = glm::normalize(axis[i]);
+		float depth = separationDistance(b, axis[i], shouldFlip);
+		if (depth < 0.0f)
+			return res;// a separation axis is found
+		else
+			if (depth < res.depth) {//keep track of the axis with the least amount of separation
+				if (shouldFlip)
+					axis[i] = axis[i] * -1.0f;
 
-	std::set<point, cmpPoint> se1 = clipEdges(b.getEdges());
-	std::set<point, cmpPoint> se2 = b.clipEdges(getEdges());
-	se1.insert(se2.begin(), se2.end());
-	
-	Interval i = getInterval(res.normal);
-	float distance = (i.mx - i.mn)* 0.5f - res.depth * 0.5f;
-	glm::vec3 pointOnPlane = c + res.normal * distance;
-	se2.clear();
-	for (const auto& p : se1) {
-		glm::vec3 pt = p + res.normal * glm::dot(res.normal, pointOnPlane - p);
-		se2.insert(pt);
+				res.depth = depth;
+				res.normal = axis[i];
+			}
 	}
-	for (const auto& p : se2)
+	//get contact points without duplication(using Set data structure)
+	std::set<point, cmpPoint> se1 = clipEdges(b.getEdges());
+	std::set<point, cmpPoint> se2 = b.clipEdges(getEdges());	
+	se1.insert(se2.begin(), se2.end());
+	//copy the contact points to the CollisionManifold
+	for (const auto& p : se1)
 		res.contacts.push_back(p);
+
 	return res.colliding = true, res;
 }
 
@@ -137,10 +132,10 @@ bool OBB::intersect(const OBB & b) const {
 	// Compute rotation matrix expressing b in this coordinate frame
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
-			R[i][j] = glm::dot(u[i], b.getLocalCoord()[j]);
+			R[i][j] = glm::dot(u[i], b.u[j]);
 
 	// Compute translation vector t
-	glm::vec3 t = b.getCenter() - c;
+	glm::vec3 t = b.c - c;
 
 	// Bring translation into this coordinate frame
 	t = glm::vec3(glm::dot(t, u[0]), glm::dot(t, u[1]), glm::dot(t, u[2]));
@@ -155,7 +150,7 @@ bool OBB::intersect(const OBB & b) const {
 	// Test axes L = A0, L = A1, L = A2
 	for (int i = 0; i < 3; i++) {
 		ra = halfExtents[i];
-		rb = b.getXRadius() * AbsR[i][0] + b.getYRadius() * AbsR[i][1] + b.getZRadius() * AbsR[i][2];
+		rb = b.halfExtents.x * AbsR[i][0] + b.halfExtents.y * AbsR[i][1] + b.halfExtents.z * AbsR[i][2];
 		if (glm::abs(t[i]) > ra + rb) return false;
 
 	}
@@ -163,95 +158,86 @@ bool OBB::intersect(const OBB & b) const {
 	// Test axes L = B0, L = B1, L = B2
 	for (int i = 0; i < 3; i++) {
 		ra = halfExtents[0] * AbsR[0][i] + halfExtents[1] * AbsR[1][i] + halfExtents[2] * AbsR[2][i];
-		rb = b.getHalfExtents()[i];
+		rb = b.halfExtents[i];
 		if (glm::abs(t[0] * R[0][i] + t[1] * R[1][i] + t[2] * R[2][i]) > ra + rb) return false;
 	}
 
 	// Test axis L = A0 x B0
 	ra = halfExtents[1] * AbsR[2][0] + halfExtents[2] * AbsR[1][0];
-	rb = b.getYRadius() * AbsR[0][2] + b.getZRadius() * AbsR[0][1];
+	rb = b.halfExtents.y * AbsR[0][2] + b.halfExtents.z * AbsR[0][1];
 	if (glm::abs(t[2] * R[1][0] - t[1] * R[2][0]) > ra + rb) return false;
 
 	// Test axis L = A0 x B1
 	ra = halfExtents[1] * AbsR[2][1] + halfExtents[2] * AbsR[1][1];
-	rb = b.getXRadius() * AbsR[0][2] + b.getZRadius() * AbsR[0][0];
+	rb = b.halfExtents.x * AbsR[0][2] + b.halfExtents.z * AbsR[0][0];
 	if (glm::abs(t[2] * R[1][1] - t[1] * R[2][1]) > ra + rb) return false;
 
 	// Test axis L = A0 x B2
 	ra = halfExtents[1] * AbsR[2][2] + halfExtents[2] * AbsR[1][2];
-	rb = b.getXRadius() * AbsR[0][1] + b.getYRadius() * AbsR[0][0];
+	rb = b.halfExtents.x * AbsR[0][1] + b.halfExtents.y * AbsR[0][0];
 	if (glm::abs(t[2] * R[1][2] - t[1] * R[2][2]) > ra + rb) return false;
 
 	// Test axis L = A1 x B0
 	ra = halfExtents[0] * AbsR[2][0] + halfExtents[2] * AbsR[0][0];
-	rb = b.getYRadius() * AbsR[1][2] + b.getZRadius() * AbsR[1][1];
+	rb = b.halfExtents.y * AbsR[1][2] + b.halfExtents.z * AbsR[1][1];
 	if (glm::abs(t[0] * R[2][0] - t[2] * R[0][0]) > ra + rb) return false;
 
 	// Test axis L = A1 x B1
 	ra = halfExtents[0] * AbsR[2][1] + halfExtents[2] * AbsR[0][1];
-	rb = b.getXRadius() * AbsR[1][2] + b.getZRadius() * AbsR[1][0];
+	rb = b.halfExtents.x * AbsR[1][2] + b.halfExtents.z * AbsR[1][0];
 	if (glm::abs(t[0] * R[2][1] - t[2] * R[0][1]) > ra + rb) return false;
 
 	// Test axis L = A1 x B2
 	ra = halfExtents[0] * AbsR[2][2] + halfExtents[2] * AbsR[0][2];
-	rb = b.getXRadius() * AbsR[1][1] + b.getYRadius() * AbsR[1][0];
+	rb = b.halfExtents.x * AbsR[1][1] + b.halfExtents.y * AbsR[1][0];
 	if (glm::abs(t[0] * R[2][2] - t[2] * R[0][2]) > ra + rb) return false;
 
 	// Test axis L = A2 x B0
 	ra = halfExtents[0] * AbsR[1][0] + halfExtents[1] * AbsR[0][0];
-	rb = b.getYRadius() * AbsR[2][2] + b.getZRadius() * AbsR[2][1];
+	rb = b.halfExtents.y * AbsR[2][2] + b.halfExtents.z * AbsR[2][1];
 	if (glm::abs(t[1] * R[0][0] - t[0] * R[1][0]) > ra + rb) return false;
 
 	// Test axis L = A2 x B1
 	ra = halfExtents[0] * AbsR[1][1] + halfExtents[1] * AbsR[0][1];
-	rb = b.getXRadius() * AbsR[2][2] + b.getZRadius() * AbsR[2][0];
+	rb = b.halfExtents.x * AbsR[2][2] + b.halfExtents.z * AbsR[2][0];
 	if (glm::abs(t[1] * R[0][1] - t[0] * R[1][1]) > ra + rb) return false;
 
 	// Test axis L = A2 x B2
 	ra = halfExtents[0] * AbsR[1][2] + halfExtents[1] * AbsR[0][2];
-	rb = b.getXRadius() * AbsR[2][1] + b.getYRadius() * AbsR[2][0];
+	rb = b.halfExtents.x * AbsR[2][1] + b.halfExtents.y * AbsR[2][0];
 	if (glm::abs(t[1] * R[0][2] - t[0] * R[1][2]) > ra + rb) return false;
 
 	// Since no separating axis is found, the OBBs must be intersecting
 	return true;
 }
 
-bool OBB::intersect(const boundingSphere & b) const {
-	return b.intersect(*this);
+bool OBB::contains(const point& p) const {
+	glm::vec3 q = closestPoint(p);
+	q = q - p;
+	return dot(q, q) < EPSILON2;
 }
 
-void OBB::sync(const point & c, const glm::mat3& rotationT) {
-	this->c = c;
-	this->u[0] = rotationT[0]; this->u[1] = rotationT[1]; this->u[2] = rotationT[2];
+Interval OBB::getInterval(const glm::vec3& axis) const{
+		std::vector<point> vertices = getVertices();
+		Interval res;
+		for (const auto& v : vertices) {
+			res.mn = glm::min(res.mn, glm::dot(axis, v));
+			res.mx = glm::max(res.mx, glm::dot(axis, v));
+		}
+		return res;	
 }
 
-void OBB::update(const point & c, const glm::mat3& rotationT, const glm::vec3 & edge) {
-	this->c = c;
-	this->u[0] = rotationT[0]; this->u[1] = rotationT[1]; this->u[2] = rotationT[2];
-	this->halfExtents = edge;
-}
-
-Interval OBB::getInterval(const glm::vec3& axis) const {
-	std::vector<point> vertices = getVertices();
-	Interval res;
-	for (const auto& v : vertices) {
-		//project each vertex on the given axis
-		float projection = glm::dot(v, axis);
-		//save minimum and maximum projection to get interval
-		res.mn = glm::min(res.mn, projection);
-		res.mx = glm::max(res.mx, projection);
-	}
-	return res;
-}
-
-float OBB::penetrationDepth(const OBB & b, const glm::vec3 & axis, bool & flip) const {
+float OBB::separationDistance(const OBB& b, const glm::vec3& axis, bool& outShouldFlip) const{
+	//project the obb's onto the axis
 	Interval i1 = getInterval(axis);
 	Interval i2 = b.getInterval(axis);
+
 	if (!i1.overlap(i2))
-		return 0.0f;
-	float max = glm::max(i1.mx, i2.mx);
-	float min = glm::min(i1.mn, i2.mn);
-	float length = max - min;
-	flip = (i2.mn < i1.mn);
-	return i1.getLen() + i2.getLen() - length;
+		return -1; // No penetration
+	
+	outShouldFlip = (i2.mn < i1.mn);//check if b is infront the obb
+
+	float length = glm::max(i1.mx, i2.mx) - glm::min(i1.mn, i2.mn);
+
+	return (i1.getLen() + i2.getLen()) - length;
 }

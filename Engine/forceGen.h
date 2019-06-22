@@ -5,7 +5,7 @@
 
 /**
 * A force generator can be asked to add a force to one or more
-* rigidbodyies.
+* rigidbodies.
 */
 class ForceGenerator{
 public:
@@ -13,7 +13,7 @@ public:
 	* Overload this in implementations of the interface to calculate
 	* and update the force applied to the given rigidBody.
 	*/
-	virtual void updateForce(RigidBody *rigidBody ,float duration) = 0;
+	virtual void updateForce(RigidBody *rigidBody, float duration) = 0;
 };
 
 /**
@@ -35,46 +35,33 @@ protected:
 			return other.body == body && other.fg == fg;
 		}
 		
-		ForceRegistration(RigidBody* rigidBody, ForceGenerator* fg) {
-			this->body = rigidBody;
-			this->fg = fg;
-		}
+		ForceRegistration(RigidBody* rigidBody, ForceGenerator* fg) : body(rigidBody) ,fg(fg) {}
 	};
-
-	/**
-	* Holds the list of registrations.
-	*/
-
-	//typedef std::list<rigidBodyForceRegistration> Registry;
 
 	std::list<ForceRegistration> registrations;
 
 public:
 
-	/**
-	* Registers the given force generator to apply to the
-	* given rigidBody.
-	*/
+	
+	//Registers the given force generator to apply to the
+	//given rigidBody.
+	
 	void add(RigidBody* rigidBody, ForceGenerator *fg);
 
-	/**
-	* Removes the given registered pair from the registry.
-	* If the pair is not registered, this method will have
-	* no effect.
-	*/
-	void remove(RigidBody* rigidBody, ForceGenerator *fg);
+	//Removes the given registered body from the registry if fun returned true
+	void remove_if(bool (*fun)(RigidBody*&));
 
-	/**
-	* Clears all registrations from the registry. This will
-	* not delete the rigidbodyies or the force generators
-	* themselves, just the records of their connection.
-	*/
+	//Removes the given registeration from the registry if fun returned true
+	void remove_if(bool(*fun)(ForceRegistration& R));
+	
+	//Clears all registrations from the registry. This will
+	//not delete the rigidbodies or the force generators
+	//themselves, just the records of their connection.
+	
 	void clear();
-
-	/**
-	* Calls all the force generators to update the forces of
-	* their corresponding rigidbodyies.
-	*/
+	
+	//Calls all the force generators to update the forces of
+	//their corresponding rigidbodies.	
 	void updateForces(float duration);
 };
 
@@ -87,10 +74,10 @@ class GravityForce : public ForceGenerator{
 public:
 
 	/** Creates the generator with the given acceleration. */
-	GravityForce(const glm::vec3 gravity) :gravity(gravity) {};
+	GravityForce(const glm::vec3 gravity) : gravity(gravity) {};
 
 	/** Applies the gravitational force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody ,float duration);
+	virtual void updateForce(RigidBody *rigidBody, float duration);
 
 	inline const glm::vec3& getGravityAcc() const { return gravity; }
 
@@ -112,18 +99,18 @@ class DragForce : public ForceGenerator{
 
 public:
 
-	/** Creates the generator with the given coefficients. */
+	//Creates the generator with the given coefficients.
 	DragForce(float k1, float k2) :k1(k1), k2(k2) {};
 
-	/** Applies the drag force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody ,float duration);
+	//Applies the drag force to the given rigidBody.
+	virtual void updateForce(RigidBody *rigidBody, float duration);
 
 private:
 
-	/** Holds the velocity drag coefficient. */
+	//Holds the velocity drag coefficient.
 	float k1;
 
-	/** Holds the velocity squared drag coefficient. */
+	//Holds the velocity squared drag coefficient.
 	float k2;
 
 };
@@ -133,30 +120,30 @@ private:
 */
 class Spring : public ForceGenerator{
 
-	/** The rigidBody at the other end of the spring. */
+	//The rigidBody at the other end of the spring.
 	RigidBody *other;
 
+	//connection point in the rigid body local space
 	glm::vec3* connectionPoint;
-
 	glm::vec3* otherConnectionPoint;
 
-	/** Holds the spring constant. */
+	//The spring constant.
 	float springConstant;
 	
-	/** Holds the rest length of the spring. */
+	//The rest length of the spring.
 	float restLength;
 
 public:
 	
-	/** Creates a new spring with the given parameters. */
-	Spring(RigidBody *other, glm::vec3* connectionPoint ,glm::vec3* otherConnectionPoint,
+	//Creates a new spring with the given parameters.
+	Spring(RigidBody *other, glm::vec3* connectionPoint, glm::vec3* otherConnectionPoint,
 		float springConstant, float restLength) : springConstant(springConstant), restLength(restLength) {
 		this->other = other;
 		this->connectionPoint = connectionPoint;
 		this->otherConnectionPoint = otherConnectionPoint;
 	};
 	
-	/** Applies the spring force to the given rigidBody. */
+	//Applies the spring force to the given rigidBody.
 	virtual void updateForce(RigidBody *rigidBody, float duration);
 };
 
@@ -167,26 +154,26 @@ public:
 class AnchoredSpring : public ForceGenerator{
 public:
 	
-	/** Creates a new spring with the given parameters. */
-	AnchoredSpring(glm::vec3 *anchor ,glm::vec3* connectionPoint,
+	//Creates a new spring with the given parameters.
+	AnchoredSpring(glm::vec3 *anchor, glm::vec3* connectionPoint,
 		float springConstant, float restLength) : springConstant(springConstant), restLength(restLength){
 		this->anchor = anchor;
 		this->connectionPoint = connectionPoint;
 	}
 	
-	/** Applies the spring force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody ,float duration);
+	//Applies the spring force to the given rigidBody.
+	virtual void updateForce(RigidBody *rigidBody, float duration);
 private:
 	
-	/** The location of the anchored end of the spring. */
+	//The position of the anchored end of the spring.
 	glm::vec3* anchor;
-
+	//connection point in the rigid body local space
 	glm::vec3* connectionPoint;
 	
-	/** Holds the spring constant. */
+	//The spring constant.
 	float springConstant;
 	
-	/** Holds the rest length of the spring. */
+	//The rest length of the spring.
 	float restLength;
 };
 
@@ -199,7 +186,7 @@ public:
 
 	/** Creates a new spring with the given parameters. */
 	FakeSpring(glm::vec3 *anchor, const glm::vec3& connectionPoint, glm::vec3* initialPosition,
-		float springConstant ,float damping) : springConstant(springConstant) ,damping(damping) ,connectionPoint(connectionPoint){
+		float springConstant, float damping) : springConstant(springConstant), damping(damping), connectionPoint(connectionPoint){
 		this->anchor = anchor;
 		this->initialPosition = initialPosition;
 	}

@@ -17,14 +17,14 @@ struct CollisionManifold {
 	float depth;
 	std::vector<point> contacts;
 
-	CollisionManifold() :normal() ,depth(1e9) ,colliding(0) {}
+	CollisionManifold() :normal(0), depth(1e9), colliding(0) {}
 };
 
 struct Line {
 	point a, b;
 	Line(point a, point b) : a(a), b(b) {}
 
-	inline void closestPoint(const point& c ,float &t, point &d) const {
+	inline void closestPoint(const point& c, float &t, point &d) const {
 		glm::vec3 ab = b - a;
 
 		// Project c onto ab, but deferring divide by Dot(ab, ab)
@@ -66,10 +66,10 @@ struct Interval {
 	float mn, mx;
 	Interval() : mn(1e9), mx(-1e9) {}
 	Interval(const float mn, const float mx) : mn(mn), mx(mx) {}
-	bool overlap(const Interval& other) const {
-		return (other.mn <= mx) && (mn <= other.mx);
+	inline bool overlap(const Interval& other) const {
+		return (other.mn - mx < EPSILON) && (mn - other.mx < EPSILON);
 	}
-	float getLen() {
+	inline float getLen() const{
 		return mx - mn;
 	}
 };
@@ -79,7 +79,17 @@ struct cmpPoint{
 		glm::vec3 u = p2 - p1;
 		if (glm::dot(u, u) < EPSILON2)
 			return false;
-		return p1.x < p2.x;
+		glm::vec3 v = glm::abs(u);
+		if (v.x < EPSILON)
+			if (v.y < EPSILON)
+				if (v.z < EPSILON)
+					return false;
+				else
+					return p1.z < p2.z;
+			else
+				return p1.y < p2.y;
+		else
+			return p1.x < p2.x;
 	}
 };
 

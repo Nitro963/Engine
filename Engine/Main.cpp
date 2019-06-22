@@ -19,11 +19,10 @@
 #include "texture.h"
 #include "Test.h"
 #include "TestClearColor.h"
-#include "TestFloor.h"
-#include "TestQubes.h"
+#include "Demo1.h"
 
 #pragma region auxiliary
-renderer::camera camera(glm::vec3(0, 1, 3));
+renderer::camera camera(glm::vec3(2, 3, 5));
 
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 720;
@@ -34,7 +33,6 @@ float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-bool pause = false;
 bool ctrl = false;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -77,12 +75,6 @@ void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.process_keyboard(renderer::RIGHT, deltaTime);
 
-	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-		pause = true;
-
-	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-		pause = false;
-
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 		ctrl = true;
 	else
@@ -96,7 +88,6 @@ void glfwErrorCallback(int error, const char* description) {
 #pragma endregion auxiliary
 
 int main() {
-
 #pragma region Init
 	GLFWwindow* window;
 	if (!glfwInit())
@@ -136,6 +127,8 @@ int main() {
 	ImGui_ImplOpenGL3_Init(glslVersion);
 
 	ImGui::StyleColorsDark();
+
+	SolidSphere::generateVertices();
 #pragma endregion Init
 
 	test::Test* currentTest = nullptr;
@@ -144,8 +137,7 @@ int main() {
 
 	test::TestClearColor test;
 	testMenu->registerTest<test::TestClearColor>("clear color");
-	testMenu->registerTest<test::TestFloor>("floor");
-	testMenu->registerTest<test::Demo>("Frashan");
+	testMenu->registerTest<test::Demo1>("Demo1");
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwSwapInterval(1);
@@ -159,8 +151,7 @@ int main() {
 
 #pragma region Imgui
 
-		ImGui::Begin("Debug");
-
+		ImGui::Begin("Control panel");
 		if (currentTest) {
 			if (currentTest != testMenu && ImGui::Button("back")) {
 				delete currentTest;
@@ -175,7 +166,7 @@ int main() {
 		ImGui::End();
 
 #pragma endregion Imgui
-
+				
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -188,5 +179,5 @@ int main() {
 	
 	ImGui::DestroyContext();
 	glfwTerminate();
-	_exit(0);
+	return 0;
 }
