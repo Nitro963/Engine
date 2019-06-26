@@ -39,7 +39,9 @@ CollisionManifold BoundingSphere::findCollisionFeatures(const OBB & b) const{
 		return res;
 	// Find point p on OBB closest to sphere center
 	point p = b.closestPoint(c);
+
 	res.contacts.push_back(p);
+
 	res.normal = glm::normalize(p - c);
 	point outsidePoint = c + res.normal * r;
 	res.depth = glm::length(p - outsidePoint);

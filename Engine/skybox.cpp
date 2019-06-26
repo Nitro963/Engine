@@ -83,8 +83,8 @@ namespace renderer {
 	}
 
 	void skybox::draw() {
-		glm::mat4 view = glm::mat4(glm::mat3(::camera.get_view_matrix()));
-		glm::mat4 projection = glm::perspective(glm::radians(::camera.get_zoom()), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
+		glm::mat4 view = glm::mat4(glm::mat3(::camera.getViewMatrix()));
+		glm::mat4 projection = glm::perspective(glm::radians(::camera.getZoom()), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
 		m_Shader->use();
 		m_Shader->set_uniform<glm::mat4>("view", view);
 		m_Shader->set_uniform<glm::mat4>("projection", projection);

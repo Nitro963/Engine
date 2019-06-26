@@ -2,14 +2,14 @@
 #include "OBB.h"
 #include "BoundingSphere.h"
 
-bool AABB::intersect(const AABB & b) const{
-	
-	if (glm::abs(center.x - b.center.x) > halfExtents.x + b.halfExtents.x) return false;
-	if (glm::abs(center.y - b.center.y) > halfExtents.y + b.halfExtents.y) return false;
-	if (glm::abs(center.z - b.center.z) > halfExtents.z + b.halfExtents.z) return false;
-
-	return true;
-}
+//bool AABB::intersect(const AABB & b) const{
+//	
+//	if (glm::abs(c.x - b.c.x) > halfExtents.x + b.halfExtents.x) return false;
+//	if (glm::abs(c.y - b.c.y) > halfExtents.y + b.halfExtents.y) return false;
+//	if (glm::abs(c.z - b.c.z) > halfExtents.z + b.halfExtents.z) return false;
+//
+//	return true;
+//}
 
 bool AABB::contains(const point & p) const{
 	glm::vec3 mn = getMin();

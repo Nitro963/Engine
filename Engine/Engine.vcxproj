@@ -124,12 +124,15 @@
     <ClCompile Include="basic.cpp" />
     <ClCompile Include="BoundingSphere.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="Demo2.cpp" />
     <ClCompile Include="forceGen.cpp" />
     <ClCompile Include="indexbuffer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MousePicker.cpp" />
     <ClCompile Include="OBB.cpp" />
-    <ClCompile Include="OctTree.cpp" />
+    <ClCompile Include="OcTree.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="skybox.cpp" />
@@ -152,12 +155,15 @@
     <ClInclude Include="basic.h" />
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="Demo2.h" />
     <ClInclude Include="forceGen.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="indexbuffer.h" />
+    <ClInclude Include="MousePicker.h" />
     <ClInclude Include="OBB.h" />
-    <ClInclude Include="OctTree.h" />
+    <ClInclude Include="OcTree.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="skybox.h" />
@@ -182,6 +188,7 @@
     <None Include="cubeMap.shader" />
     <None Include="res\Shaders\Basic.shader" />
     <None Include="res\Shaders\floor.shader" />
+    <None Include="res\Shaders\multipleLightsCasters.shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

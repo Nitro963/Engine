@@ -6,14 +6,14 @@
 #include<set>
 #include "AABB.h"
 
-class Plane;
+
 class OBB {
 public:
 	//Given OBB center, local space axes and three scalers
 	OBB(point& c, glm::vec3 u[3], glm::vec3& halfExtents) :c(c), halfExtents(halfExtents), u{ u[0], u[1], u[2] } {}
 	OBB(const point& c, const glm::mat3& rotation, const glm::vec3& edge) :c(c), halfExtents(edge), u(rotation) {}
 	//casting AABB into OBB
-	OBB(const AABB& box) : c(box.center), halfExtents(box.halfExtents), u{ glm::vec3(1, 0, 0),  glm::vec3(0, 1, 0), glm::vec3(0, 0, 1) } {};
+	OBB(const AABB& box) : c(box.getCenter()), halfExtents(box.getHalfExtents()), u{ glm::vec3(1, 0, 0),  glm::vec3(0, 1, 0), glm::vec3(0, 0, 1) } {};
 	inline void sync(const point& c, const glm::mat3& rotation) {
 		this->c = c;
 		this->u[0] = rotation[0]; this->u[1] = rotation[1]; this->u[2] = rotation[2];
@@ -58,5 +58,8 @@ private:
 	std::set<point, cmpPoint> clipEdges(const std::vector<Line>& edges) const;
 
 	friend class Plane;
+	friend class BoundingSphere;
+	friend class Ray;
+	friend class AABB;
 };
 #endif // !OBB_H

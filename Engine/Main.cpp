@@ -20,6 +20,7 @@
 #include "Test.h"
 #include "TestClearColor.h"
 #include "Demo1.h"
+#include "Demo2.h"
 
 #pragma region auxiliary
 renderer::camera camera(glm::vec3(2, 3, 5));
@@ -36,7 +37,7 @@ float lastFrame = 0.0f;
 bool ctrl = false;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-	//glViewport((width - 720) / 2, (height - 720) / 2, width, 720);
+	//glViewport((width - 1200) / 2, (height - 720) / 2, 1200, 720);
 	glViewport(0, 0, width, height);
 }
 
@@ -55,7 +56,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 	lastX = xpos;
 	lastY = ypos;
 
-	camera.process_mouse_movement(xoffset, yoffset);
+	camera.processMouseMovement(xoffset, yoffset);
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -97,7 +98,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Physics Engine", NULL, NULL);
+	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Engine", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return -1;
@@ -109,7 +110,7 @@ int main() {
 	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	glfwSetErrorCallback(glfwErrorCallback);
-
+	glfwSetWindowSizeLimits(window, SCR_WIDTH, SCR_HEIGHT, SCR_WIDTH, SCR_HEIGHT);
 	if (glewInit())
 		throw std::exception("Failed to initialize GLEW\n");
 
@@ -138,6 +139,7 @@ int main() {
 	test::TestClearColor test;
 	testMenu->registerTest<test::TestClearColor>("clear color");
 	testMenu->registerTest<test::Demo1>("Demo1");
+	testMenu->registerTest<test::Demo2>("Demo2");
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwSwapInterval(1);
@@ -153,7 +155,7 @@ int main() {
 
 		ImGui::Begin("Control panel");
 		if (currentTest) {
-			if (currentTest != testMenu && ImGui::Button("back")) {
+			if (currentTest != testMenu && ImGui::ArrowButton("back", ImGuiDir_Left)) {
 				delete currentTest;
 				currentTest = testMenu;
 			}

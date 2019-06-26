@@ -27,11 +27,12 @@ bool Plane::intersect(const OBB& b) const{
 }
 
 bool Plane::intersect(const AABB & b) const{
+	glm::vec3 halfExtents = b.getHalfExtents();
 	// Compute the projection interval radius of b onto L(t) = b.c + t * p.n
-	float r = b.halfExtents.x * glm::abs(n[0]) + b.halfExtents.x * glm::abs(n[1]) + b.halfExtents.z * glm::abs(n[2]);
+	float r = halfExtents.x * glm::abs(n[0]) + halfExtents.x * glm::abs(n[1]) + halfExtents.z * glm::abs(n[2]);
 	// Compute distance of box center from plane
 	// Intersection occurs when distance s falls within [-r,+r] interval
-	return glm::abs(distPoint(b.center)) - r < EPSILON;
+	return glm::abs(distPoint(b.getCenter())) - r < EPSILON;
 }
 
 bool Plane::intersect(const Line & seg) const{

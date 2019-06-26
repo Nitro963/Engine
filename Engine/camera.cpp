@@ -15,7 +15,7 @@ namespace renderer {
 		this->pitch = pitch;
 		update_camera_vectors();
 	}
-	glm::mat4 camera::get_view_matrix() {
+	glm::mat4 camera::getViewMatrix() {
 		return glm::lookAt(position, position + Front, Up);
 	}
 
@@ -33,7 +33,7 @@ namespace renderer {
 	}
 
 
-	void camera::process_mouse_movement(float xoffset, float yoffset, bool constrainPitch) {
+	void camera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 		xoffset *= MouseSensitivity;
 		yoffset *= MouseSensitivity;
 

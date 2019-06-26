@@ -1,18 +1,18 @@
-#include "Demo1.h"
+#include "Demo2.h"
 
-test::Demo1::Demo1() {
-	tree = new OcTree(glm::vec3(0.f), 32);// OcTree::buildTree(glm::vec3(0), 32);
+test::Demo2::Demo2() : update(true){
+	tree = new OcTree(glm::vec3(0.f), 32);
 	init();
 	mainShader = new renderer::shader("res/shaders/basic.shader");
-	update = 1;
 }
 
-void test::Demo1::init() {
-	bodies.push_back(new SolidCuboid(1e12, glm::vec3(32, 4, 32), glm::vec3(0 ,-4 ,0)));
+void test::Demo2::init(){
+	bodies.push_back(new SolidCuboid(1e12, glm::vec3(1, 1, 1), glm::vec3(0, 0, 0)));
+	//bodies.push_back(new SolidSphere(1e12, 0.5));
 	tree->insert(bodies.back());
 }
 
-void test::Demo1::reset() {
+void test::Demo2::reset(){
 	update = 1;
 	tree->clear();
 	registry.clear();
@@ -20,9 +20,10 @@ void test::Demo1::reset() {
 		delete body;
 	bodies.clear();
 	init();
+
 }
 
-test::Demo1::~Demo1() {
+test::Demo2::~Demo2(){
 	delete tree;
 	registry.clear();
 	for (auto& body : bodies)
@@ -31,11 +32,11 @@ test::Demo1::~Demo1() {
 	delete mainShader;
 }
 
-bool isDead(RigidBody*& body){
+bool isDead1(RigidBody*& body) {
 	return body->isDead();
 }
 
-void test::Demo1::OnRender() {
+void test::Demo2::OnRender(){
 	if (debugRender) {
 		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 	}
@@ -44,6 +45,7 @@ void test::Demo1::OnRender() {
 	}
 	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 	GLCall(glClearColor(0.f, 0.f, 0.f, 0.f));
+	picker.update();
 	glm::mat4 view = camera.getViewMatrix();
 	glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
 	mainShader->use();
@@ -75,43 +77,65 @@ void test::Demo1::OnRender() {
 		resolveInterpentration(contact);
 
 	if (update) {
-		registry.remove_if(isDead);
-		bodies.remove_if(isDead);
+		registry.remove_if(isDead1);
+		bodies.remove_if(isDead1);
 		registry.updateForces();
 		//integrate bodies, update the tree and
 		//prune out any dead branches
 		tree->update(1.f / ImGui::GetIO().Framerate);
 	}
-
 	for (const auto & b : bodies) {
-		model = b->getModel(glm::vec3(0.5));
+		model = b->getModel(glm::vec3(1.f));
 		mainShader->set_uniform<glm::mat4>("model", model);
 		b->render();
 	}
 }
 
-void test::Demo1::OnImGuiRender() {
+void test::Demo2::OnImGuiRender(){
 	ImGui::SameLine();
 	if (ImGui::Button("Reset demo"))
 		reset();
 	ImGui::SameLine();
-	ImGui::Checkbox("Update", &update);
+	ImGui::Checkbox("update", &update);
 	ImGui::SameLine();
-	ImGui::Checkbox("debug render" ,&debugRender);
+	ImGui::Checkbox("debug render", &debugRender);
+	ImGui::Separator();
+	ImGui::Text("RigidBody mass, position and orientation");
 	ImGui::PushItemWidth(55);
 	ImGui::InputFloat("Mass", &mass);
-	ImGui::SameLine(); ImGui::InputFloat("Radius", &rad);
 	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(200);
 	ImGui::InputFloat3("position", &pos[0]);
+	ImGui::InputFloat3("axis", &axis[0]);
+	ImGui::SliderAngle("Angel", &theta);
+	ImGui::PopItemWidth();
+	ImGui::Separator();
+	ImGui::Text("Solid Sphere");
+	ImGui::PushItemWidth(55);
+	ImGui::InputFloat("Radius", &rad);
+	ImGui::PopItemWidth();
 	if (ImGui::Button("add Sphere")) {
-		bodies.push_back(new SolidSphere(mass, rad, pos));
+		bodies.push_back(new SolidSphere(mass, rad, pos, glm::angleAxis(theta, axis)));
 		tree->insert(bodies.back());
 		registry.add(bodies.back(), new GravityForce(glm::vec3(0, -9.8, 0)));
 	}
+	ImGui::Separator();
+	ImGui::PushItemWidth(200);
+	ImGui::Text("Solid Cubiod");
 	ImGui::InputFloat3("Cuboid Extents", &extents[0]);
+	ImGui::PopItemWidth();
 	if (ImGui::Button("add Cuboid")) {
-		bodies.push_back(new SolidCuboid(mass, extents, pos));
+		bodies.push_back(new SolidCuboid(mass, extents, pos, glm::angleAxis(theta, axis)));
 		tree->insert(bodies.back());
 		registry.add(bodies.back(), new GravityForce(glm::vec3(0, -9.8, 0)));
+	}
+	ImGui::Separator();
+	ImGui::Text("Motor joint to the last Rigid body");
+	ImGui::PushItemWidth(200);
+	ImGui::InputFloat3("force", &force[0]);
+	ImGui::InputFloat3("attatched point", &pt[0]);
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Add Motor")) {
+		registry.add(bodies.back(), new MotorJoint(force, pos));
 	}
 }

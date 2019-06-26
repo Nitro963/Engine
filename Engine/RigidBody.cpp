@@ -7,36 +7,36 @@ std::vector<float> SolidSphere::vertices;
 std::vector<unsigned int> SolidSphere::indices;
 
 std::vector<float> SolidCuboid::vertices = {
--0.5f, -0.5f, -0.5f,
-0.5f, -0.5f, -0.5f,
-0.5f, 0.5f, -0.5f,
--0.5f, 0.5f, -0.5f,
+-0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
+0.5f, -0.5f, -0.5f,	  0.0f,  0.0f, -1.0f,
+0.5f, 0.5f, -0.5f,	  0.0f,  0.0f, -1.0f,
+-0.5f, 0.5f, -0.5f,	   0.0f,  0.0f, -1.0f,
 
 
--0.5f, -0.5f, 0.5f,
-0.5f, -0.5f, 0.5f,
-0.5f, 0.5f, 0.5f,
--0.5f, 0.5f, 0.5f,
+-0.5f, -0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
+0.5f, -0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
+0.5f, 0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
+-0.5f, 0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
 
--0.5f, 0.5f, 0.5f,
--0.5f, 0.5f, -0.5f,
--0.5f, -0.5f, -0.5f,
--0.5f, -0.5f, 0.5f,
+-0.5f, 0.5f, 0.5f, -1.0f,  0.0f,  0.0f,
+-0.5f, 0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+-0.5f, -0.5f, 0.5f, -1.0f,  0.0f,  0.0f,
 
-0.5f, 0.5f, 0.5f,
-0.5f, 0.5f, -0.5f,
-0.5f, -0.5f, -0.5f,
-0.5f, -0.5f, 0.5f,
+0.5f, 0.5f, 0.5f, 1.0f,  0.0f,  0.0f,
+0.5f, 0.5f, -0.5f, 1.0f,  0.0f,  0.0f,
+0.5f, -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,
+0.5f, -0.5f, 0.5f, 1.0f,  0.0f,  0.0f,
 
--0.5f, -0.5f, -0.5f,
-0.5f, -0.5f, -0.5f,
-0.5f, -0.5f, 0.5f,
--0.5f, -0.5f, 0.5f,
+-0.5f, -0.5f, -0.5f, 0.0f, -1.0f,  0.0f,
+0.5f, -0.5f, -0.5f, 0.0f, -1.0f,  0.0f,
+0.5f, -0.5f, 0.5f, 0.0f, -1.0f,  0.0f,
+-0.5f, -0.5f, 0.5f, 0.0f, -1.0f,  0.0f,
 
--0.5f, 0.5f, -0.5f,
-0.5f, 0.5f, -0.5f,
-0.5f, 0.5f, 0.5f,
--0.5f, 0.5f, 0.5f,
+-0.5f, 0.5f, -0.5f, 0.0f,  1.0f,  0.0f,
+0.5f, 0.5f, -0.5f, 0.0f,  1.0f,  0.0f,
+0.5f, 0.5f, 0.5f, 0.0f,  1.0f,  0.0f,
+-0.5f, 0.5f, 0.5f, 0.0f,  1.0f,  0.0f,
 };
 std::vector<unsigned int> SolidCuboid::indices = {
 	0, 1, 2,
@@ -74,15 +74,10 @@ void addQuad(std::vector<unsigned int>& indices, unsigned int a, unsigned int b,
 	indices.push_back(d);
 }
 
-RigidBody::RigidBody(const float mass, const glm::mat3  tensorBody, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)), forceAccum(), torqueAccum(), awake(0), alive(1) {
-	this->position = position;
-	this->orientation = orientation;
-	this->velocity = velocity;
-	this->omega = omega;
+RigidBody::RigidBody(const float mass, const glm::mat3  tensorBody, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)), forceAccum(), torqueAccum(), awake(0), alive(1) ,position(position), orientation(orientation), velocity(velocity), omega(omega) {
 	//this->linearMomentum = velocity * mass;
 	rotation = glm::toMat3(orientation);
-	rotationT = glm::transpose(rotation);
-	invTensor = rotation * invTensorBody * rotationT;
+	invTensor = rotation * invTensorBody * glm::transpose(rotation);
 	//this->angularMomentum = glm::inverse(invTensor) * omega;
 }
 
@@ -128,8 +123,7 @@ void RigidBody::calcDerivedQuantities() {
 
 	//velocity = linearMomentum * invMass * 0.8f;
 	rotation = glm::toMat3(orientation);
-	rotationT = glm::transpose(rotation);
-	invTensor = rotation * invTensorBody * rotationT;
+	invTensor = rotation * invTensorBody * glm::transpose(rotation);
 	//omega = invTensor * angularMomentum * 0.8f;
 }
 
@@ -165,26 +159,39 @@ void SolidSphere::generateVertices() {
 	const unsigned int m = 40;
 	for (int i = 0; i <= n; i++) {
 		double lat0 = glm::pi<float>() * (-0.5 + (float)(i - 1) / n);
-		double z0 = sin(lat0);
-		double zr0 = cos(lat0);
+		double z0 = glm::sin(lat0);
+		double zr0 = glm::cos(lat0);
 
 		double lat1 = glm::pi<float>() * (-0.5 + (float)i / n);
-		double z1 = sin(lat1);
-		double zr1 = cos(lat1);
+		double z1 = glm::sin(lat1);
+		double zr1 = glm::cos(lat1);
 
 		for (int j = 0; j <= m; j++) {
 			double lng = 2 * glm::pi<float>() * (float)(j - 1) / m;
-			double x = cos(lng);
-			double y = sin(lng);
+			double x = glm::cos(lng);
+			double y = glm::sin(lng);
 
-			vertices.push_back(x * zr0);
-			vertices.push_back(y * zr0);
-			vertices.push_back(z0);
+			glm::vec3 v(x * zr0, y * zr0, z0);
+			glm::vec3 vn = glm::normalize(v);
+			glm::vec3 u(x * zr1, y * zr1, z1);
+			glm::vec3 un = glm::normalize(u);
+			
+			vertices.push_back(v.x);
+			vertices.push_back(v.y);
+			vertices.push_back(v.z);
+			vertices.push_back(vn.x);
+			vertices.push_back(vn.y);
+			vertices.push_back(vn.z);
+
 			indices.push_back(indicator++);
 
-			vertices.push_back(x * zr1);
-			vertices.push_back(y * zr1);
-			vertices.push_back(z1);
+			vertices.push_back(u.x);
+			vertices.push_back(u.y);
+			vertices.push_back(u.z);
+			vertices.push_back(un.x);
+			vertices.push_back(un.y);
+			vertices.push_back(un.z);
+
 			indices.push_back(indicator++);
 		}
 		indices.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
@@ -196,6 +203,7 @@ SolidSphere::SolidSphere(const float mass, const float radius, const glm::vec3  
 	VBO = std::make_unique<renderer::vertexbuffer>(&vertices[0], vertices.size() * sizeof(float));
 	renderer::vertexbufferlayout layout;
 	layout.push<float>(3);
+	layout.push<float>(3);
 	VAO = std::make_unique<renderer::vertexarray>();
 	VAO->addbuffer(*VBO, layout);
 	IBO = std::make_unique<renderer::indexbuffer>(&indices[0], indices.size());
@@ -204,7 +212,7 @@ SolidSphere::SolidSphere(const float mass, const float radius, const glm::vec3  
 }
 
 void SolidSphere::applyForce(const glm::vec3& point, const glm::vec3& force) {
-	if (glm::dot(point, point) - radius * radius > EPSILON)
+	if (glm::dot(point, point) - radius * radius > EPSILON2)
 		return;
 	RigidBody::applyForce(point, force);
 }
@@ -214,7 +222,7 @@ void SolidSphere::render() const {
 	glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX);
 	VAO->bind();
 	IBO->bind();
-	GLCall(glDrawElements(GL_TRIANGLE_FAN, IBO->getcount(), GL_UNSIGNED_INT, NULL));
+	GLCall(glDrawElements(GL_TRIANGLE_STRIP, IBO->getcount(), GL_UNSIGNED_INT, NULL));
 	VAO->unbind();
 	IBO->unbind();
 	GLCall(glDisable(GL_PRIMITIVE_RESTART));
@@ -232,6 +240,7 @@ SolidCuboid::SolidCuboid(const float mass, const glm::vec3& extents, const glm::
 
 	VBO = std::make_unique<renderer::vertexbuffer>(&vertices[0], vertices.size() * sizeof(float));
 	renderer::vertexbufferlayout layout;
+	layout.push<float>(3);
 	layout.push<float>(3);
 	VAO = std::make_unique<renderer::vertexarray>();
 	VAO->addbuffer(*VBO, layout);
@@ -272,13 +281,14 @@ void applyImpulse(ContactData* contact, float epsilon) {
 		// if the objects are Moving away from each other at p we will skip it 
 		if (vrel > 0.f)
 			continue;
-
+		
 		float numerator = -(1.f + epsilon) * vrel;
 
 		glm::vec3 term1 = glm::cross(contact->A->invTensor * glm::cross(ra, contact->M->normal), ra);
 		glm::vec3 term2 = glm::cross(contact->B->invTensor * glm::cross(rb, contact->M->normal), rb);
 		float denominator = invMassSum + glm::dot(contact->M->normal, term1 + term2);
-
+		if (glm::abs(denominator) < EPSILON)
+			denominator += EPSILON;
 		float j = (numerator / denominator);
 		if (j < EPSILON)
 			continue;
@@ -288,12 +298,12 @@ void applyImpulse(ContactData* contact, float epsilon) {
 		glm::vec3 torqueA = glm::cross(ra, impulse);
 		glm::vec3 torqueB = glm::cross(rb, impulse);
 
-		contact->A->velocity = contact->A->velocity - impulse *	contact->A->invMass;
-		contact->B->velocity = contact->B->velocity + impulse *	contact->B->invMass;
+		contact->A->velocity -= impulse * contact->A->invMass;
+		contact->B->velocity += impulse * contact->B->invMass;
 
 		contact->A->omega -= contact->A->invTensor * torqueA;
 		contact->B->omega += contact->B->invTensor * torqueB;
-
+		
 		glm::vec3 t = relativeVel - (contact->M->normal * glm::dot(relativeVel, contact->M->normal));
 		if (glm::dot(t, t) < EPSILON2)
 			continue;
@@ -304,13 +314,15 @@ void applyImpulse(ContactData* contact, float epsilon) {
 		term1 = glm::cross(contact->A->invTensor * glm::cross(ra, t), ra);
 		term2 = glm::cross(contact->B->invTensor * glm::cross(rb, t), rb);
 		denominator = invMassSum + glm::dot(t, term1 + term2);
+		if (glm::abs(denominator) < EPSILON)
+			denominator += EPSILON;
 
 		float jt = numerator / denominator;
 		if (glm::abs(jt) < EPSILON)
 			continue;
 		jt /= contact->M->contacts.size();
 
-		float friction = glm::sqrt(0.3 * 0.01);
+		float friction = glm::sqrt(0.2 * 0.1);
 
 		jt = glm::clamp(jt, -j * friction, j * friction);
 
@@ -318,11 +330,17 @@ void applyImpulse(ContactData* contact, float epsilon) {
 		torqueA = glm::cross(ra, tangentImpuse);
 		torqueB = glm::cross(rb, tangentImpuse);
 
-		contact->A->velocity = contact->A->velocity - tangentImpuse *	contact->A->invMass;
-		contact->B->velocity = contact->B->velocity + tangentImpuse *	contact->B->invMass;
+		contact->A->velocity -= tangentImpuse *	contact->A->invMass;
+		contact->B->velocity += tangentImpuse *	contact->B->invMass;
 
 		contact->A->omega -= contact->A->invTensor * torqueA;
 		contact->B->omega += contact->B->invTensor * torqueB;
+
+		if (glm::dot(contact->A->velocity, contact->A->velocity) > 0.01 || glm::dot(contact->A->omega, contact->A->omega) > 0.01)
+			contact->A->awake = 1;
+		if (glm::dot(contact->B->velocity, contact->B->velocity) > 0.01 || glm::dot(contact->B->omega, contact->B->omega) > 0.01)
+			contact->B->awake = 1;
+
 	}
 }
 

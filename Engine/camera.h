@@ -45,11 +45,11 @@ namespace renderer {
 		camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
 		// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-		glm::mat4 get_view_matrix();
+		glm::mat4 getViewMatrix();
 
-		inline glm::vec3 get_position() { return position; }
+		inline glm::vec3 getPosition() { return position; }
 
-		inline float get_zoom() { return Zoom; }
+		inline float getZoom() { return Zoom; }
 
 		inline glm::vec3 get_front() { return Front; }
 
@@ -57,7 +57,7 @@ namespace renderer {
 		void process_keyboard(Camera_Movement direction, float deltaTime);
 
 		// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-		void process_mouse_movement(float xoffset, float yoffset, bool constrainPitch = true);
+		void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
 
 		// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 		void process_mouse_scroll(float yoffset);

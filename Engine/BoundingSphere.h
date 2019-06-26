@@ -33,5 +33,6 @@ private:
 	friend class OBB;
 	friend class Plane;
 	friend class AABB;
+	friend class Ray;
 };
 #endif // !BOUNDINGSPHERE_H

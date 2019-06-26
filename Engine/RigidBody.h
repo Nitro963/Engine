@@ -41,8 +41,6 @@ public:
 
 	inline const glm::mat3& getRotation() const { return rotation; }
 
-	inline const glm::mat3& getRotationT() const { return rotationT; }
-
 	inline const glm::vec3& getAngularVelocity() const { return omega; }
 
 	inline const glm::vec3& getVelocity() const { return velocity; }
@@ -72,9 +70,9 @@ public:
 	
 	inline void kill() { alive = 0; }
 
-	inline bool isAwake() { return awake; }
+	inline bool isAwake() const { return awake; }
 
-	inline bool isDead() { return !alive; }
+	inline bool isDead() const { return !alive; }
 
 	virtual void render() const {};
 	
@@ -92,8 +90,6 @@ protected:
 
 	glm::mat3 invTensor;
 	glm::mat3 rotation;
-	glm::mat3 rotationT;
-
 
 	//constant variable
 	glm::mat3 tensorBody;

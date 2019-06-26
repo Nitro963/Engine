@@ -37,12 +37,12 @@ struct Line {
 		else {
 			float denom = glm::dot(ab, ab); // Always nonnegative since denom = ||ab||∧2
 			if (t >= denom) {
-				// c projects outside the [a,b] interval, on the b side; clamp to b
+				// c projects outside the [a,b] interval, on the b side, clamp to b
 				t = 1.0f;
 				d = b;
 			}
 			else {
-				// c projects inside the [a,b] interval; must do deferred divide now
+				// c projects inside the [a,b] interval, must do deferred divide now
 				t = t / denom;
 				d = a + t * ab;
 			}

@@ -4,7 +4,7 @@
 
 std::vector<point> OBB::getVertices() const{
 	std::vector<glm::vec3> ve;
-
+	ve.reserve(8);
 	ve.push_back(c + u[0] * halfExtents[0] + u[1] * halfExtents[1] + u[2] * halfExtents[2]);
 	ve.push_back(c - u[0] * halfExtents[0] + u[1] * halfExtents[1] + u[2] * halfExtents[2]);
 	ve.push_back(c + u[0] * halfExtents[0] - u[1] * halfExtents[1] + u[2] * halfExtents[2]);
@@ -20,7 +20,7 @@ std::vector<point> OBB::getVertices() const{
 std::vector<Line> OBB::getEdges() const{
 	std::vector<Line> res;
 	std::vector<point> vertices = getVertices();
-
+	res.reserve(12);
 	unsigned int indices[12][2] = {
 		{ 0, 1 },{ 0, 3 },{ 0, 2 },
 		{ 1, 6 },{ 1, 7 },{ 2, 7 },
@@ -37,7 +37,7 @@ std::vector<Line> OBB::getEdges() const{
 std::vector<Plane> OBB::getFaces() const{
 
 	std::vector<Plane> ve;
-
+	ve.reserve(6);
 	ve.push_back(Plane(u[0], c + u[0] * halfExtents[0]));
 	ve.push_back(Plane(-u[0], c - u[0] * halfExtents[0]));
 
@@ -98,7 +98,7 @@ CollisionManifold OBB::findCollisionFeatures(const OBB & b) const {
 
 	for (int i = 0; i < 15; ++i) {
 		bool shouldFlip = 0;
-		// check if axis squared length = 0
+		// check for if the axis is degenerated
 		if (glm::dot(axis[i], axis[i])< EPSILON2)
 			continue;
 		axis[i] = glm::normalize(axis[i]);
@@ -107,17 +107,15 @@ CollisionManifold OBB::findCollisionFeatures(const OBB & b) const {
 			return res;// a separation axis is found
 		else
 			if (depth < res.depth) {//keep track of the axis with the least amount of separation
-				if (shouldFlip)
-					axis[i] = axis[i] * -1.0f;
-
 				res.depth = depth;
-				res.normal = axis[i];
+				res.normal = axis[i] * (shouldFlip ? -1.f : 1.f);
 			}
 	}
 	//get contact points without duplication(using Set data structure)
 	std::set<point, cmpPoint> se1 = clipEdges(b.getEdges());
 	std::set<point, cmpPoint> se2 = b.clipEdges(getEdges());	
 	se1.insert(se2.begin(), se2.end());
+	res.contacts.reserve(se1.size());
 	//copy the contact points to the CollisionManifold
 	for (const auto& p : se1)
 		res.contacts.push_back(p);
