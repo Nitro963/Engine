@@ -265,7 +265,6 @@ void SolidCuboid::render() const {
 }
 
 void applyImpulse(ContactData* contact, float epsilon) {
-
 	float invMassSum = contact->B->invMass + contact->A->invMass;
 
 	if (invMassSum < EPSILON)
@@ -290,7 +289,7 @@ void applyImpulse(ContactData* contact, float epsilon) {
 		if (glm::abs(denominator) < EPSILON)
 			denominator += EPSILON;
 		float j = (numerator / denominator);
-		if (j < EPSILON)
+		if (glm::abs(j) < EPSILON)
 			continue;
 		j /= contact->M->contacts.size();
 
@@ -322,7 +321,7 @@ void applyImpulse(ContactData* contact, float epsilon) {
 			continue;
 		jt /= contact->M->contacts.size();
 
-		float friction = glm::sqrt(0.2 * 0.1);
+		float friction = glm::sqrt(0.6 * 0.6);
 
 		jt = glm::clamp(jt, -j * friction, j * friction);
 

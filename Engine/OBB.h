@@ -5,7 +5,7 @@
 #include<vector>
 #include<set>
 #include "AABB.h"
-
+#include<iostream>
 
 class OBB {
 public:
@@ -46,6 +46,10 @@ public:
 
 	// Determine whether the OBB intersects OBB b
 	bool intersect(const OBB& b) const;
+
+	inline OBB scaled(glm::vec3 scale) {
+		return OBB(c, glm::mat4(u), halfExtents * scale);
+	}
 private:
 	point c; //OBB center
 	glm::mat3x3 u; //OBB local axis

@@ -135,14 +135,20 @@
     <ClCompile Include="OcTree.cpp">
       <Filter>Source Files\Collision Detector</Filter>
     </ClCompile>
-    <ClCompile Include="Demo2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MousePicker.cpp">
       <Filter>Source Files\Collision Detector</Filter>
     </ClCompile>
     <ClCompile Include="Ray.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="Demo2.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Joint.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Demo3.cpp">
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +247,12 @@
     </ClInclude>
     <ClInclude Include="Ray.h">
       <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="Joint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Demo3.h">
+      <Filter>Header Files\Tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

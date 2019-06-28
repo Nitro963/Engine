@@ -12,9 +12,9 @@ public:
 	/**
 	* Overload this in implementations of the interface to calculate
 	* and update the force applied to the given rigidBody.*/
-	virtual void updateForce(RigidBody *rigidBody) = 0;
+	virtual void updateForce(RigidBody *rigidBody, float duration) = 0;
 };
-
+class TimedMotorJoint;
 /**
 * Holds all the force generators and the rigidBodies they apply to.
 */
@@ -38,10 +38,7 @@ protected:
 	};
 
 	std::list<ForceRegistration> registrations;
-
 public:
-
-
 	//Registers the given force generator to apply to the
 	//given rigidBody.
 
@@ -61,7 +58,7 @@ public:
 
 	//Calls all the force generators to update the forces of
 	//their corresponding rigidbodies.	
-	void updateForces();
+	void updateForces(float duration);
 };
 
 /**
@@ -73,15 +70,15 @@ class GravityForce : public ForceGenerator {
 public:
 	//Creates the generator with the given acceleration.
 	GravityForce(const glm::vec3 gravity) : gravity(gravity) {};
-	GravityForce(const float& planetMass, const float& planetRadius): gravity(glm::vec3(0, -G * planetMass / planetRadius,0)){}
+	GravityForce(const float& planetMass, const float& planetRadius) : gravity(glm::vec3(0, -G * planetMass / planetRadius, 0)) {}
 	static const float G;
-	inline static GravityForce moonGravity() { return GravityForce(glm::vec3(0, -1.62, 0)); }
-	inline static GravityForce EarthGravity() { return GravityForce(glm::vec3(0, -9.807, 0)); }
-	inline static GravityForce saturnGravity() { return GravityForce(glm::vec3(0, -10.44, 0)); }
-	inline static GravityForce jupiterGravity() { return GravityForce(glm::vec3(0, -24.79, 0)); }
+	inline static GravityForce* moonGravity() { return new GravityForce(glm::vec3(0, -1.62, 0)); }
+	inline static GravityForce* EarthGravity() { return new GravityForce(glm::vec3(0, -9.807, 0)); }
+	inline static GravityForce* saturnGravity() { return new GravityForce(glm::vec3(0, -10.44, 0)); }
+	inline static GravityForce* jupiterGravity() { return new GravityForce(glm::vec3(0, -24.79, 0)); }
 
 	//Applies the gravitational force to the given rigidBody.
-	virtual void updateForce(RigidBody *rigidBody) override;
+	virtual void updateForce(RigidBody *rigidBody, float duration) override;
 
 	inline const glm::vec3& getGravityAcc() const { return gravity; }
 
@@ -107,7 +104,7 @@ public:
 	DragForce(float C) :C(C) {};
 
 	//Applies the drag force to the given rigidBody.
-	virtual void updateForce(RigidBody *rigidBody) override;
+	virtual void updateForce(RigidBody *rigidBody, float duration) override;
 
 private:
 
@@ -115,15 +112,23 @@ private:
 	float C;
 };
 
-class MotorJoint : public ForceGenerator{
+class MotorJoint : public ForceGenerator {
 public:
 	MotorJoint(const glm::vec3& force, const glm::vec3& pt) : force(force), pt(pt) {}
-	virtual void updateForce(RigidBody *RigidBody) override;
-private:
+	virtual void updateForce(RigidBody *RigidBody, float duration) override;
+protected:
 	//the point where to apply force in the rigid body local space
 	glm::vec3 pt;
 	//the force to be applied
 	glm::vec3 force;
+};
+
+class TimedMotorJoint : public MotorJoint {
+public:
+	TimedMotorJoint(const float& t ,const glm::vec3& force, const glm::vec3 pt) : t(t) ,MotorJoint(force, pt){}
+	virtual void updateForce(RigidBody *RigidBody, float duration) override;
+private:
+	float t;
 };
 
 #endif // !ForceGen_H

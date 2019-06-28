@@ -28,7 +28,7 @@ bool OcTree::insert(RigidBody * body) {
 	}
 	glm::vec3 dimensions = m_region.getExtents();
 
-	//If we're at the smallest size, just insert the item here. We can't go any lower!
+	//If we're at the smallest size, just insert the body here. We can't go any lower!
 	if (glm::dot(dimensions - minSize, dimensions - minSize) < EPSILON2) {
 		m_bodies.push_back(body);
 		return true;
@@ -209,10 +209,33 @@ void OcTree::update(const float duration) {
 		if (m_childNode[i])
 			m_childNode[i]->update(duration);
 
-	//remove and insert moved bodies
+	//remove and reinsert moved bodies
 	for (auto& body : movedBodies) {
 		m_bodies.remove(body);
 		if (!insert(body))
 			body->kill();
+	}
+}
+
+void OcTree::getNearest(const Ray & r, RigidBody *& body, float & t) const{
+	float ret;
+	for (int i = 0, flag = m_activationMask; flag; ++i, flag >>= 1)
+		if (flag & 1)
+			if (r.intersect(m_childNode[i]->m_region, ret))
+				m_childNode[i]->getNearest(r, body, t);
+	for (auto& b : m_bodies) {
+		if (b->getCollider1()) {
+			if (r.intersect(*b->getCollider1(), ret))
+				if (ret < t){
+					t = ret;
+					body = b;
+				}
+		}
+		else
+			if(r.intersect(*b->getCollider2(),ret))
+				if (ret < t) {
+					t = ret;
+					body = b;
+				}
 	}
 }

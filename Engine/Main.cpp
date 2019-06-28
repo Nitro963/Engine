@@ -21,14 +21,13 @@
 #include "TestClearColor.h"
 #include "Demo1.h"
 #include "Demo2.h"
+#include "Demo3.h"
 
 #pragma region auxiliary
-renderer::camera camera(glm::vec3(2, 3, 5));
+renderer::camera camera(glm::vec3(12, 12, 12));
 
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 720;
-int slot0 = 0;
-int slot1 = 1;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -42,6 +41,8 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+	if (ImGui::GetIO().WantCaptureMouse)
+		return;
 	if (!ctrl)
 		return;
 	if (firstMouse) {
@@ -60,7 +61,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-	camera.process_mouse_scroll(yoffset);
+	camera.processMouseScroll(yoffset);
 }
 
 void processInput(GLFWwindow *window) {
@@ -68,13 +69,13 @@ void processInput(GLFWwindow *window) {
 		glfwSetWindowShouldClose(window, true);
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.process_keyboard(renderer::FORWARD, deltaTime);
+		camera.processKeyboard(renderer::FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.process_keyboard(renderer::BACKWARD, deltaTime);
+		camera.processKeyboard(renderer::BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.process_keyboard(renderer::LEFT, deltaTime);
+		camera.processKeyboard(renderer::LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.process_keyboard(renderer::RIGHT, deltaTime);
+		camera.processKeyboard(renderer::RIGHT, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 		ctrl = true;
@@ -140,6 +141,7 @@ int main() {
 	testMenu->registerTest<test::TestClearColor>("clear color");
 	testMenu->registerTest<test::Demo1>("Demo1");
 	testMenu->registerTest<test::Demo2>("Demo2");
+	testMenu->registerTest<test::Demo3>("Demo3");
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwSwapInterval(1);
@@ -158,13 +160,14 @@ int main() {
 			if (currentTest != testMenu && ImGui::ArrowButton("back", ImGuiDir_Left)) {
 				delete currentTest;
 				currentTest = testMenu;
+				camera = renderer::camera();
 			}
 			currentTest->OnRender();
 			currentTest->OnImGuiRender();
 		}
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
+		
 		ImGui::End();
 
 #pragma endregion Imgui

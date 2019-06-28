@@ -1,38 +1,49 @@
-#include "Demo2.h"
+#include "Demo3.h"
 
-test::Demo2::Demo2() : update(true),picker(&modifyBody ,&read){
+const char* test::Demo3::gravity[4] = {"Earth","Moon","Saturn","Jupiter"};
+
+const char* test::Demo3::currentgravity = test::Demo3::gravity[0];
+
+test::Demo3::Demo3() : picker(&modifyBody, &read) {
 	camera = renderer::camera(glm::vec3(12.f), glm::vec3(0.f, 1.f, 0.f), -135.f, -30.f);
 	tree = new OcTree(glm::vec3(0.f), 32);
 	init();
 	mainShader = new renderer::shader("res/shaders/basic.shader");
 }
 
-void test::Demo2::init(){
+void test::Demo3::init() {
+	modifyBody = nullptr;
 	bodies.push_back(new SolidCuboid(1e12, glm::vec3(16, 2, 16), glm::vec3(0, 0, 0)));
 	tree->insert(bodies.back());
+	currentgravity = gravity[0];
 }
 
-void test::Demo2::reset(){
+void test::Demo3::reset() {
 	update = 1;
 	tree->clear();
 	registry.clear();
+	Jregistry.clear();
 	for (auto& body : bodies)
 		delete body;
 	bodies.clear();
 	init();
-
 }
 
-test::Demo2::~Demo2(){
+test::Demo3::~Demo3() {
 	delete tree;
 	registry.clear();
+	Jregistry.clear();
 	for (auto& body : bodies)
 		delete body;
 	bodies.clear();
 	delete mainShader;
+	delete Earth;
+	delete Moon;
+	delete Saturn;
+	delete Jupiter;
 }
 
-void test::Demo2::OnRender(){
+void test::Demo3::OnRender() {
 	if (debugRender) {
 		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 	}
@@ -73,15 +84,19 @@ void test::Demo2::OnRender(){
 
 	if (update) {
 		float duration = 1.f / ImGui::GetIO().Framerate;
+		//remove dead bodies
 		registry.remove_if(isDead);
+		//updage forces for all bodies
 		registry.updateForces(duration);
 		//integrate bodies, update the tree and
 		//prune out any dead branches
 		tree->update(duration);
+		//solve constraints of all bodies
+		Jregistry.solveConstraints(duration);
 	}
 	for (auto it = bodies.begin(); it != bodies.end();) {
 		auto body = *it;
-		if (body->isDead()){
+		if (body->isDead()) {
 			auto tmp = it;
 			++it;
 			bodies.erase(tmp);
@@ -102,19 +117,11 @@ void test::Demo2::OnRender(){
 	}
 }
 
-void test::Demo2::OnImGuiRender(){
-	ImGui::SameLine();
-	if (ImGui::Button("Reset demo"))
-		reset();
-	ImGui::SameLine();
-	ImGui::Checkbox("Integrate", &update);
-	ImGui::SameLine();
-	ImGui::Checkbox("Debug render", &debugRender);
-	ImGui::Separator();
+void test::Demo3::OnImGuiRender() {
 	if (modifyBody) {
 		if (read) {
-			sphere = nullptr;
 			cuboid = nullptr;
+			sphere = nullptr;
 			mass = modifyBody->getMass();
 			sphere = dynamic_cast<SolidSphere*>(modifyBody);
 			if (sphere)
@@ -126,6 +133,27 @@ void test::Demo2::OnImGuiRender(){
 			read = false;
 		}
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset demo"))
+		reset();
+	ImGui::SameLine();
+	ImGui::Checkbox("Integrate", &update);
+	ImGui::SameLine();
+	ImGui::Checkbox("Debug render", &debugRender);
+	ImGui::Separator();
+	ImGui::PushItemWidth(70);
+	if (ImGui::BeginCombo("Gravity", currentgravity)) {
+		for (int i = 0; i < 4; i++) {
+			bool isSelected = currentgravity == gravity[i];
+			if (ImGui::Selectable(gravity[i], isSelected))
+				currentgravity = gravity[i];
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopItemWidth();
+	ImGui::Separator();
 	ImGui::Text("Rigid body mass, position and orientation");
 	ImGui::PushItemWidth(55);
 	ImGui::InputFloat("Mass", &mass);
@@ -143,7 +171,14 @@ void test::Demo2::OnImGuiRender(){
 	if (ImGui::Button("add sphere")) {
 		bodies.push_back(new SolidSphere(mass, rad, pos, glm::angleAxis(theta, axis)));
 		tree->insert(bodies.back());
-		registry.add(bodies.back(), new GravityForce(glm::vec3(0, -9.8, 0)));
+		if (currentgravity == gravity[0])
+			registry.add(bodies.back(), Earth);
+		if (currentgravity == gravity[1])
+			registry.add(bodies.back(), Moon);
+		if (currentgravity == gravity[2])
+			registry.add(bodies.back(), Saturn);
+		if (currentgravity == gravity[3])
+			registry.add(bodies.back(), Jupiter);
 	}
 	ImGui::Separator();
 	ImGui::PushItemWidth(200);
@@ -153,7 +188,14 @@ void test::Demo2::OnImGuiRender(){
 	if (ImGui::Button("Add cuboid")) {
 		bodies.push_back(new SolidCuboid(mass, extents, pos, glm::angleAxis(theta, axis)));
 		tree->insert(bodies.back());
-		registry.add(bodies.back(), new GravityForce(glm::vec3(0, -9.8, 0)));
+		if (currentgravity == gravity[0])
+			registry.add(bodies.back(), Earth);
+		if (currentgravity == gravity[1])
+			registry.add(bodies.back(), Moon);
+		if (currentgravity == gravity[2])
+			registry.add(bodies.back(), Saturn);
+		if (currentgravity == gravity[3])
+			registry.add(bodies.back(), Jupiter);
 	}
 	if (modifyBody) {
 		ImGui::Separator();
@@ -174,8 +216,16 @@ void test::Demo2::OnImGuiRender(){
 		if (ImGui::Button("Apply force Once"))
 			modifyBody->applyForce(pt, force);
 		ImGui::Separator();
+		ImGui::Text("Add a fixed joint");
+		ImGui::PushItemWidth(200);
+		ImGui::InputFloat3("Fixed at point", &Jpt[0]);
+		ImGui::PopItemWidth();
+		if (ImGui::Button("Add joint"))
+			Jregistry.add(modifyBody, new FixedJoint(Jpt));
+		ImGui::Separator();	
 		ImGui::PushItemWidth(200);
 		if (ImGui::Button("Apply modification")) {
+			std::cout << "updating";
 			if (cuboid)
 				cuboid->update(mass, extents);
 			else

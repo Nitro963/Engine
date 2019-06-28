@@ -25,10 +25,14 @@ CollisionManifold BoundingSphere::findCollisionFeatures(const BoundingSphere & b
 	res.colliding = intersect(b);
 	if (!res.colliding)
 		return res;
-	glm::vec3 d = b.c - c;
-	res.depth = r + b.r - glm::length(d);
-	res.normal = glm::normalize(d);
-	res.contacts.push_back(c + res.normal * (r - res.depth));
+	glm::vec3 closest_point = closestPoint(b.c);
+	if (glm::dot(closest_point - b.c, closest_point - b.c) < EPSILON2)
+		res.normal = glm::normalize(closest_point - c);
+	else
+		res.normal = glm::normalize(b.c - closest_point);
+	glm::vec3 outsidePoint = c + res.normal * r;
+	res.depth = r + b.r - glm::length(b.c - c);
+	res.contacts.push_back(closest_point);
 	return res;
 }
 
@@ -48,7 +52,7 @@ CollisionManifold BoundingSphere::findCollisionFeatures(const OBB & b) const{
 	return res;
 }
 
-point BoundingSphere::closestPoint(const point & p){
+point BoundingSphere::closestPoint(const point & p) const{
 	glm::vec3 n = p - c;
 	if (glm::dot(n, n) - r * r < EPSILON)
 		return p;

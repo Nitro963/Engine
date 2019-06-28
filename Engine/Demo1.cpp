@@ -1,6 +1,7 @@
 #include "Demo1.h"
 
 test::Demo1::Demo1() {
+	camera = renderer::camera(glm::vec3(7.f,6.f,7.f), glm::vec3(0.f, 1.f, 0.f), -135.f, -30.f);
 	tree = new OcTree(glm::vec3(0.f), 32);// OcTree::buildTree(glm::vec3(0), 32);
 	init();
 	mainShader = new renderer::shader("res/shaders/basic.shader");
@@ -29,10 +30,6 @@ test::Demo1::~Demo1() {
 		delete body;
 	bodies.clear();
 	delete mainShader;
-}
-
-bool isDead(RigidBody*& body){
-	return body->isDead();
 }
 
 void test::Demo1::OnRender() {
@@ -77,14 +74,14 @@ void test::Demo1::OnRender() {
 	if (update) {
 		registry.remove_if(isDead);
 		bodies.remove_if(isDead);
-		registry.updateForces();
+		registry.updateForces(1.f / ImGui::GetIO().Framerate);
 		//integrate bodies, update the tree and
 		//prune out any dead branches
 		tree->update(1.f / ImGui::GetIO().Framerate);
 	}
 
 	for (const auto & b : bodies) {
-		model = b->getModel(glm::vec3(0.5));
+		model = b->getModel(glm::vec3(0.5f));
 		mainShader->set_uniform<glm::mat4>("model", model);
 		b->render();
 	}

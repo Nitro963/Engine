@@ -18,7 +18,6 @@
 #include "texture.h"
 #include "Test.h"
 
-struct ContactData;
 class RigidBody {
 public:
 
@@ -66,8 +65,30 @@ public:
 
 	inline const glm::mat3& getInverseTensor() const { return invTensor; }
 
-	inline virtual const glm::mat4 getModel(glm::vec3 scaler) const { return glm::identity<glm::mat4>(); }
-	
+	inline void translate(const glm::vec3& translation) { position += translation; }
+
+	inline void rotate(const glm::fquat& rotation) { orientation = rotation * orientation; }
+
+	inline void setPosition(const glm::vec3& position) {
+		this->position = position;
+		syncColliders();
+	}
+
+	inline void setVelocity(const glm::vec3& velocity) {
+		this->velocity = velocity;
+	}
+
+	inline void setAngularVelocity(const glm::vec3& omega) {
+		this->omega = omega;
+	}
+
+	inline void setOrientation(const glm::fquat& orientation) {
+		this->orientation = orientation;
+		calcDerivedQuantities();
+	}
+
+	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const { return glm::identity<glm::mat4>(); }
+
 	inline void kill() { alive = 0; }
 
 	inline bool isAwake() const { return awake; }
@@ -76,10 +97,9 @@ public:
 
 	virtual void render() const {};
 	
-	friend void applyImpulse(ContactData* contact, float epsilon);
+	friend void applyImpulse(struct ContactData* contact, float epsilon);
 
-	friend void resolveInterpentration(ContactData* contact);
-	
+	friend void resolveInterpentration(struct ContactData* contact);
 protected:
 	glm::vec3 position;
 	glm::fquat orientation;
@@ -110,7 +130,9 @@ protected:
 
 	inline void clearAccum() { forceAccum[0] = forceAccum[1] = forceAccum[2] = torqueAccum[0] = torqueAccum[1] = torqueAccum[2] = 0; }
 };
-
+inline bool isDead(RigidBody*& body) {
+	return body->isDead();
+}
 class SolidSphere : public RigidBody{
 public:
 	SolidSphere(const float mass, const float radius, const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
@@ -119,7 +141,15 @@ public:
 	
 	inline float getRadius() { return radius; }
 	
-	inline virtual const glm::mat4 getModel(glm::vec3 scaler) const override {
+	inline void update(float mass, float radius) {
+		invMass = 1 / mass;
+		tensorBody = generateTensor(mass, radius);
+		invTensorBody = glm::inverse(tensorBody);
+		this->radius = radius;
+		collider1->update(position, radius);
+	}
+
+	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const override {
 		glm::mat4 model = glm::scale(glm::identity<glm::mat4>(), scaler);
 		model = glm::translate(model, position) * glm::mat4(rotation);
 		model = glm::scale(model, glm::vec3(radius));
@@ -130,7 +160,7 @@ public:
 	static void generateVertices();
 
 private:
-	const float radius;
+	float radius;
 
 	inline static glm::mat3 generateTensor(float mass, float radius);
 
@@ -149,7 +179,15 @@ public:
 
 	inline const glm::vec3& getExtents() { return extents; }
 	
-	inline virtual const glm::mat4 getModel(glm::vec3 scaler) const override {
+	inline void update(float mass, const glm::vec3 extents) {
+		invMass = 1 / mass;
+		tensorBody = generateTensor(mass, extents);
+		invTensorBody = glm::inverse(tensorBody);
+		this->extents = extents;
+		collider2->update(position, rotation, extents * 0.5f);
+	}
+
+	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const override {
 		glm::mat4 model = glm::scale(glm::identity<glm::mat4>(), scaler);
 		model = glm::translate(model, position) * glm::mat4(rotation);
 		model = glm::scale(model, extents);

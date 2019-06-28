@@ -10,12 +10,15 @@ glm::vec3 MousePicker::toWorldCoord(glm::vec4 eyeCoords){
 	return glm::vec3(glm::normalize(glm::inverse(camera.getViewMatrix()) * eyeCoords));
 }
 
-void MousePicker::update(){
-	if (ImGui::GetIO().MouseDown[0] && ImGui::GetIO().MouseDownOwned && !ImGui::GetIO().WantCaptureMouse) {
-		glm::mat4 view = camera.getViewMatrix();
-		glm::vec2 normalizedCoords = getNormalizedDeviceCoords();
+void MousePicker::update(OcTree* tree){
+	if (ImGui::GetIO().MouseClicked[0] && ImGui::GetIO().MouseDownOwned && !ImGui::GetIO().WantCaptureMouse) {
+		*modifyBody = nullptr;
+		glm::vec2 normalizedCoords = getNormalizedDeviceCoords(glm::vec2(ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y));
 		glm::vec4 clipCoords = glm::vec4(normalizedCoords.x, normalizedCoords.y, -1.f, 1.f);
 		glm::vec4 eyeCoords = toEyeCoords(clipCoords);
-		m_currentRay = Ray(camera.getPosition(),toWorldCoord(eyeCoords));
+		m_currentRay = Ray(camera.getPosition(), toWorldCoord(eyeCoords));
+		float t = 1e9;
+		tree->getNearest(m_currentRay, *modifyBody, t);
+		*read = modifyBody;
 	}
 }

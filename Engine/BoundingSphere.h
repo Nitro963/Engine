@@ -15,7 +15,7 @@ public:
 	CollisionManifold findCollisionFeatures(const OBB& b) const;
 
 	// Given point p, return the point q on or in the Sphere that is closest to p
-	point closestPoint(const point& p);
+	point closestPoint(const point& p) const;
 
 	void sync(const point& c);
 	void update(const point& c, float r);

@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include "RigidBody.h"
+#include "Ray.h"
 
 class OcTree {
 private:
@@ -28,5 +29,6 @@ public:
 	void clear();
 	std::vector<ContactData*> getContacts(std::list<RigidBody*> parentList);
 	void update(const float duration);
+	void getNearest(const Ray& r, RigidBody*& body, float& t) const;
 };
 #endif // !OCTTREE_H
