@@ -75,20 +75,22 @@ void addQuad(std::vector<unsigned int>& indices, unsigned int a, unsigned int b,
 	indices.push_back(d);
 }
 
-RigidBody::RigidBody(const float mass, const glm::mat3 tensorBody, const Material& bodyMaterial, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)),bodyMaterial(bodyMaterial) , forceAccum(), torqueAccum(), awake(0), alive(1) ,position(position), orientation(orientation), velocity(velocity), omega(omega) {
-	//this->linearMomentum = velocity * mass;
+RigidBody::RigidBody(const float mass, const glm::mat3 tensorBody, const Material& bodyMaterial, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)),bodyMaterial(bodyMaterial) , alive(1) ,position(position), orientation(orientation), velocity(velocity), omega(omega) {
 	rotation = glm::toMat3(orientation);
 	invTensor = rotation * invTensorBody * glm::transpose(rotation);
-	//this->angularMomentum = glm::inverse(invTensor) * omega;
+
+	if (glm::dot(velocity, velocity) < VELOCITYLIMIT && glm::dot(omega, omega) < VELOCITYLIMIT)
+		this->velocity = glm::vec3(0), this->omega = glm::vec3(0), awake = 0;
+	else
+		awake = 1;
+
 }
 
 void RigidBody::integrate(float duration) {
 	if (isDead())
 		return;
-	velocity += forceAccum * invMass * duration;
-	velocity *= damping;
 
-	omega += invTensor * torqueAccum * duration;
+	velocity *= damping;
 	omega *= damping;
 
 	if (glm::dot(velocity, velocity) < VELOCITYLIMIT && glm::dot(omega, omega) < VELOCITYLIMIT)
@@ -104,13 +106,7 @@ void RigidBody::integrate(float duration) {
 
 	calcDerivedQuantities();
 
-	//linearMomentum += forceAccum * duration;
-
-	//angularMomentum += torqueAccum * duration;
-
 	syncColliders();
-
-	clearAccum();
 }
 
 void RigidBody::syncColliders() {
@@ -128,14 +124,14 @@ void RigidBody::calcDerivedQuantities() {
 	//omega = invTensor * angularMomentum * 0.8f;
 }
 
-void RigidBody::applyForce(const glm::vec3& point, const glm::vec3& force) {
-	forceAccum += force;
+void RigidBody::applyImpulse(const glm::vec3& point, const glm::vec3& impulse) {
+	velocity += impulse * invMass;
 
-	torqueAccum += glm::cross(point, force);
+	omega += invTensor * glm::cross(point, impulse);
 }
 
-void RigidBody::applyForce(const glm::vec3 & force) {
-	forceAccum += force;
+void RigidBody::applyImpulse(const glm::vec3 & impulse) {
+	velocity += impulse * invMass;
 }
 
 point RigidBody::transform(const point& pt) const {
@@ -212,10 +208,10 @@ SolidSphere::SolidSphere(const float mass, const float radius, const Material& b
 	collider1 = std::make_unique<BoundingSphere>(position, radius);
 }
 
-void SolidSphere::applyForce(const glm::vec3& point, const glm::vec3& force) {
+void SolidSphere::applyImpulse(const glm::vec3& point, const glm::vec3& impulse) {
 	if (glm::dot(point, point) - radius * radius > EPSILON2)
 		return;
-	RigidBody::applyForce(point, force);
+	RigidBody::applyImpulse(point, impulse);
 }
 
 void SolidSphere::render() const {
@@ -250,11 +246,11 @@ SolidCuboid::SolidCuboid(const float mass, const glm::vec3& extents, const Mater
 	collider2 = std::make_unique<OBB>(position, rotation, extents * 0.5f);
 }
 
-void SolidCuboid::applyForce(const glm::vec3 & point, const glm::vec3 & force) {
+void SolidCuboid::applyImpulse(const glm::vec3 & point, const glm::vec3 & impulse) {
 	glm::vec3 diff = glm::clamp(point, -extents * 0.5f, extents * 0.5f) - point;
 	if (glm::dot(diff, diff) > EPSILON2)
 		return;
-	RigidBody::applyForce(point, force);
+	RigidBody::applyImpulse(point, impulse);
 }
 
 void SolidCuboid::render() const {
@@ -265,7 +261,7 @@ void SolidCuboid::render() const {
 	IBO->unbind();
 }
 
-void applyImpulse(ContactData* contact) {
+void resolveContact(ContactData* contact) {
 	float invMassSum = contact->B->invMass + contact->A->invMass;
 
 	if (invMassSum < EPSILON)

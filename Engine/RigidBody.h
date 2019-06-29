@@ -41,9 +41,9 @@ public:
 	void syncColliders();
 
 	//point is given in local space
-	virtual void applyForce(const glm::vec3& point, const glm::vec3& force);
+	virtual void applyImpulse(const glm::vec3& point, const glm::vec3& impulse);
 
-	void applyForce(const glm::vec3& force);
+	void applyImpulse(const glm::vec3& impulse);
 
 	point transform(const point& pt) const;
 
@@ -116,7 +116,7 @@ public:
 
 	virtual void render() const {};
 	
-	friend void applyImpulse(struct ContactData* contact);
+	friend void resolveContact(struct ContactData* contact);
 
 	friend void resolveInterpentration(struct ContactData* contact);
 protected:
@@ -136,9 +136,6 @@ protected:
 	float invMass;
 	Material bodyMaterial;
 
-	glm::vec3 forceAccum;
-	glm::vec3 torqueAccum;
-
 	//int colliderType;
 	std::unique_ptr<BoundingSphere> collider1;
 	std::unique_ptr<OBB> collider2;
@@ -147,8 +144,6 @@ protected:
 	bool alive;
 
 	void calcDerivedQuantities();
-
-	inline void clearAccum() { forceAccum[0] = forceAccum[1] = forceAccum[2] = torqueAccum[0] = torqueAccum[1] = torqueAccum[2] = 0; }
 };
 
 inline bool isDead(RigidBody*& body) {
@@ -159,7 +154,7 @@ class SolidSphere : public RigidBody{
 public:
 	SolidSphere(const float mass, const float radius, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
-	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
+	virtual void applyImpulse(const glm::vec3& point, const glm::vec3& Impulse) override;
 	
 	inline float getRadius() { return radius; }
 	
@@ -197,7 +192,7 @@ class SolidCuboid : public RigidBody{
 public:
 	SolidCuboid(const float mass, const glm::vec3& extens, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
-	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
+	virtual void applyImpulse(const glm::vec3& point, const glm::vec3& impulse) override;
 
 	inline const glm::vec3& getExtents() { return extents; }
 	
@@ -238,7 +233,7 @@ struct ContactData {
 	~ContactData() { delete M; }
 };
 
-void applyImpulse(ContactData* contact);
+void resolveContact(ContactData* contact);
 
 void resolveInterpentration(ContactData* contact);
 #endif // !RIGID_BODY_H

@@ -76,7 +76,7 @@ void test::Demo3::OnRender() {
 			GLCall(glDrawArrays(GL_POINTS, 0, contact->M->contacts.size()));
 		}
 		for (int i = 0; i < 8; i++)
-			applyImpulse(contact);
+			resolveContact(contact);
 	}
 
 	for (auto& contact : contacts)
@@ -86,8 +86,11 @@ void test::Demo3::OnRender() {
 		float duration = 1.f / ImGui::GetIO().Framerate;
 		//remove dead bodies
 		registry.remove_if(isDead);
+		Jregistry.remove_if(isDead);
+
 		//updage forces for all bodies
 		registry.updateForces(duration);
+
 		//integrate bodies, update the tree and
 		//prune out any dead branches
 		tree->update(duration);
@@ -242,7 +245,7 @@ void test::Demo3::OnImGuiRender() {
 			registry.add(modifyBody, new TimedMotorJoint(t, force, pt));
 		ImGui::SameLine();
 		if (ImGui::Button("Apply force Once"))
-			modifyBody->applyForce(pt, force);
+			modifyBody->applyImpulse(pt, force);
 		ImGui::Separator();
 		ImGui::Text("Add a fixed joint");
 		ImGui::PushItemWidth(200);

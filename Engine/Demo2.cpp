@@ -65,7 +65,7 @@ void test::Demo2::OnRender(){
 			GLCall(glDrawArrays(GL_POINTS, 0, contact->M->contacts.size()));
 		}
 		for (int i = 0; i < 8; i++)
-			applyImpulse(contact);
+			resolveContact(contact);
 	}
 
 	for (auto& contact : contacts)
@@ -172,7 +172,7 @@ void test::Demo2::OnImGuiRender(){
 			registry.add(modifyBody, new TimedMotorJoint(t, force, pt));
 		ImGui::SameLine();
 		if (ImGui::Button("Apply force Once"))
-			modifyBody->applyForce(pt, force);
+			modifyBody->applyImpulse(pt, force);
 		ImGui::Separator();
 		ImGui::PushItemWidth(200);
 		if (ImGui::Button("Apply modification")) {

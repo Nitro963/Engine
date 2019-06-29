@@ -65,7 +65,7 @@ void test::Demo1::OnRender() {
 			GLCall(glDrawArrays(GL_POINTS, 0, contact->M->contacts.size()));
 		}
 		for (int i = 0; i < 8; i++)
-			applyImpulse(contact);
+			resolveContact(contact);
 	}
 
 	for (auto& contact : contacts)

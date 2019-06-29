@@ -40,6 +40,17 @@ void ForceRegistry::remove(RigidBody *& body){
 			++it;
 }
 
+void ForceRegistry::remove(ForceGenerator * fg){
+	for (auto it = registrations.begin(); it != registrations.end();)
+		if (it->fg == fg) {
+			auto tmp = it;
+			++it;
+			registrations.erase(tmp);
+		}
+		else
+			++it;
+}
+
 void ForceRegistry::clear() {
 	registrations.clear();
 }
@@ -50,7 +61,7 @@ void ForceRegistry::updateForces(float duration) {
 }
 
 void GravityForce::updateForce(RigidBody * body, float duration) {
-	body->applyForce(gravity * body->getMass());
+	body->applyImpulse(gravity * body->getMass() * duration);
 }
 
 void DragForce::updateForce(RigidBody * RigidBody, float duration) {
@@ -59,16 +70,16 @@ void DragForce::updateForce(RigidBody * RigidBody, float duration) {
 	float dragCoeff = -C * glm::dot(force, force);
 	// Calculate the final force and apply it.
 	force = dragCoeff * glm::normalize(force);
-	RigidBody->applyForce(force);
+	RigidBody->applyImpulse(force * duration);
 }
 
 void MotorJoint::updateForce(RigidBody * RigidBody, float duration) {
-	RigidBody->applyForce(pt, force);
+	RigidBody->applyImpulse(pt, force * duration);
 }
 
 void TimedMotorJoint::updateForce(RigidBody * RigidBody, float duration){
 	if (t > EPSILON) {
-		RigidBody->applyForce(pt, force);
+		RigidBody->applyImpulse(pt, force * duration);
 		t -= duration;
 	}
 }
