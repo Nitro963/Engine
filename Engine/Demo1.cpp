@@ -9,7 +9,7 @@ test::Demo1::Demo1() {
 }
 
 void test::Demo1::init() {
-	bodies.push_back(new SolidCuboid(1e12, glm::vec3(32, 4, 32), glm::vec3(0 ,-4 ,0)));
+	bodies.push_back(new SolidCuboid(1e12, glm::vec3(32, 4, 32), Material(), glm::vec3(0 ,-4 ,0)));
 	tree->insert(bodies.back());
 }
 
@@ -65,7 +65,7 @@ void test::Demo1::OnRender() {
 			GLCall(glDrawArrays(GL_POINTS, 0, contact->M->contacts.size()));
 		}
 		for (int i = 0; i < 8; i++)
-			applyImpulse(contact, 0.6);
+			applyImpulse(contact);
 	}
 
 	for (auto& contact : contacts)
@@ -101,13 +101,13 @@ void test::Demo1::OnImGuiRender() {
 	ImGui::PopItemWidth();
 	ImGui::InputFloat3("position", &pos[0]);
 	if (ImGui::Button("add Sphere")) {
-		bodies.push_back(new SolidSphere(mass, rad, pos));
+		bodies.push_back(new SolidSphere(mass, rad, Material(), pos));
 		tree->insert(bodies.back());
 		registry.add(bodies.back(), new GravityForce(glm::vec3(0, -9.8, 0)));
 	}
 	ImGui::InputFloat3("Cuboid Extents", &extents[0]);
 	if (ImGui::Button("add Cuboid")) {
-		bodies.push_back(new SolidCuboid(mass, extents, pos));
+		bodies.push_back(new SolidCuboid(mass, extents, Material(), pos));
 		tree->insert(bodies.back());
 		registry.add(bodies.back(), new GravityForce(glm::vec3(0, -9.8, 0)));
 	}

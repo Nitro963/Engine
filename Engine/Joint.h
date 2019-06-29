@@ -42,6 +42,8 @@ public:
 	//Removes the given registeration from the registry if fun returned true
 	void remove_if(bool(*fun)(JointRegistration& R));
 
+	void remove(RigidBody*&);
+
 	//Clears all registrations from the registry. This will
 	//not delete the rigidbodies or the joints
 	//themselves, just the records of their connection.

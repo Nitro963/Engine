@@ -115,6 +115,13 @@ void OcTree::clear() {
 		}
 }
 
+void OcTree::remove(RigidBody *& body){
+	m_bodies.remove(body);
+	for (int i = 0; i < 8; i++)
+		if (m_childNode[i])
+			m_childNode[i]->remove(body);
+}
+
 std::vector<ContactData*> OcTree::getContacts(std::list<RigidBody*> parentList) {
 	std::vector<ContactData*> ret;
 	for (auto it = m_bodies.rbegin(); it != m_bodies.rend(); ++it) {

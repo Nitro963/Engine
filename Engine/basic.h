@@ -11,12 +11,6 @@ void glClearError();
 
 bool glLogCall(const char* function, const char* file, int line);
 
-struct Material {
-	float shininess;
-	float epsilon;
-	float mu;
-};
-
 struct DirLight {
 	glm::vec3 direction;
 

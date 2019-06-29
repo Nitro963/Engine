@@ -26,6 +26,17 @@ void JointRegistry::remove_if(bool(*fun)(JointRegistration &R)) {
 			++it;
 }
 
+void JointRegistry::remove(RigidBody *& body) {
+	for (auto it = registrations.begin(); it != registrations.end();)
+		if (it->body == body) {
+			auto tmp = it;
+			++it;
+			registrations.erase(tmp);
+		}
+		else
+			++it;
+}
+
 void JointRegistry::clear(){
 	registrations.clear();
 }

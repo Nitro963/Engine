@@ -18,10 +18,23 @@
 #include "texture.h"
 #include "Test.h"
 
+#define VELOCITYLIMIT 1e-4
+
+struct Material {
+	float shininess;
+	float epsilon;
+	float mu;
+	float muDynamic;
+	Material() : shininess(32), epsilon(0.7), mu(0.5) ,muDynamic(0.3) {}
+	Material(const float& shininess, const float& epsilon, const float& mu) : shininess(shininess), epsilon(epsilon), mu(mu){}
+};
+
 class RigidBody {
 public:
 
-	RigidBody(const float mass, const glm::mat3 tensorBody, const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
+	static float damping;
+
+	RigidBody(const float mass, const glm::mat3 tensorBody, const Material& bodyMaterial = Material(), const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
 
 	void integrate(float duration);
 
@@ -43,6 +56,8 @@ public:
 	inline const glm::vec3& getAngularVelocity() const { return omega; }
 
 	inline const glm::vec3& getVelocity() const { return velocity; }
+
+	inline const Material& getMaterial() const { return bodyMaterial; }
 
 	//inline const glm::vec3& getAngularMomentum() const { return angularMomentum; }
 
@@ -87,6 +102,10 @@ public:
 		calcDerivedQuantities();
 	}
 
+	inline void setMaterial(const Material& bodyMaterial) {
+		this->bodyMaterial = bodyMaterial;
+	}
+
 	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const { return glm::identity<glm::mat4>(); }
 
 	inline void kill() { alive = 0; }
@@ -97,7 +116,7 @@ public:
 
 	virtual void render() const {};
 	
-	friend void applyImpulse(struct ContactData* contact, float epsilon);
+	friend void applyImpulse(struct ContactData* contact);
 
 	friend void resolveInterpentration(struct ContactData* contact);
 protected:
@@ -115,6 +134,7 @@ protected:
 	glm::mat3 tensorBody;
 	glm::mat3 invTensorBody;
 	float invMass;
+	Material bodyMaterial;
 
 	glm::vec3 forceAccum;
 	glm::vec3 torqueAccum;
@@ -130,12 +150,14 @@ protected:
 
 	inline void clearAccum() { forceAccum[0] = forceAccum[1] = forceAccum[2] = torqueAccum[0] = torqueAccum[1] = torqueAccum[2] = 0; }
 };
+
 inline bool isDead(RigidBody*& body) {
 	return body->isDead();
 }
+
 class SolidSphere : public RigidBody{
 public:
-	SolidSphere(const float mass, const float radius, const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
+	SolidSphere(const float mass, const float radius, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
 	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
 	
@@ -173,7 +195,7 @@ private:
 
 class SolidCuboid : public RigidBody{
 public:
-	SolidCuboid(const float mass, const glm::vec3& extens, const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
+	SolidCuboid(const float mass, const glm::vec3& extens, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
 	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
 
@@ -216,7 +238,7 @@ struct ContactData {
 	~ContactData() { delete M; }
 };
 
-void applyImpulse(ContactData* contact, float epsilon);
+void applyImpulse(ContactData* contact);
 
 void resolveInterpentration(ContactData* contact);
 #endif // !RIGID_BODY_H

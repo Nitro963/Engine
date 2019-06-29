@@ -1,6 +1,6 @@
 #include "Demo3.h"
 
-const char* test::Demo3::gravity[4] = {"Earth","Moon","Saturn","Jupiter"};
+const char* test::Demo3::gravity[4] = { "Earth","Moon","Saturn","Jupiter" };
 
 const char* test::Demo3::currentgravity = test::Demo3::gravity[0];
 
@@ -13,7 +13,7 @@ test::Demo3::Demo3() : picker(&modifyBody, &read) {
 
 void test::Demo3::init() {
 	modifyBody = nullptr;
-	bodies.push_back(new SolidCuboid(1e12, glm::vec3(16, 2, 16), glm::vec3(0, 0, 0)));
+	bodies.push_back(new SolidCuboid(1e12, glm::vec3(16, 2, 16), Material(), glm::vec3(0, 0, 0)));
 	tree->insert(bodies.back());
 	currentgravity = gravity[0];
 }
@@ -76,7 +76,7 @@ void test::Demo3::OnRender() {
 			GLCall(glDrawArrays(GL_POINTS, 0, contact->M->contacts.size()));
 		}
 		for (int i = 0; i < 8; i++)
-			applyImpulse(contact, 0.6);
+			applyImpulse(contact);
 	}
 
 	for (auto& contact : contacts)
@@ -122,13 +122,15 @@ void test::Demo3::OnImGuiRender() {
 		if (read) {
 			cuboid = nullptr;
 			sphere = nullptr;
-			mass = modifyBody->getMass();
+			bodyMass = modifyBody->getMass();
+			bodyPos = modifyBody->getPosition();
+			bodyMaterial = modifyBody->getMaterial();
 			sphere = dynamic_cast<SolidSphere*>(modifyBody);
 			if (sphere)
-				rad = sphere->getRadius();
+				bodyRad = sphere->getRadius();
 			else {
 				cuboid = dynamic_cast<SolidCuboid*>(modifyBody);
-				extents = cuboid->getExtents();
+				bodyExtents = cuboid->getExtents();
 			}
 			read = false;
 		}
@@ -169,7 +171,7 @@ void test::Demo3::OnImGuiRender() {
 	ImGui::InputFloat("Radius", &rad);
 	ImGui::PopItemWidth();
 	if (ImGui::Button("add sphere")) {
-		bodies.push_back(new SolidSphere(mass, rad, pos, glm::angleAxis(theta, axis)));
+		bodies.push_back(new SolidSphere(mass, rad, Material(), pos, glm::angleAxis(theta, axis)));
 		tree->insert(bodies.back());
 		if (currentgravity == gravity[0])
 			registry.add(bodies.back(), Earth);
@@ -186,7 +188,7 @@ void test::Demo3::OnImGuiRender() {
 	ImGui::InputFloat3("Cuboid Extents", &extents[0]);
 	ImGui::PopItemWidth();
 	if (ImGui::Button("Add cuboid")) {
-		bodies.push_back(new SolidCuboid(mass, extents, pos, glm::angleAxis(theta, axis)));
+		bodies.push_back(new SolidCuboid(mass, extents, Material(), pos, glm::angleAxis(theta, axis)));
 		tree->insert(bodies.back());
 		if (currentgravity == gravity[0])
 			registry.add(bodies.back(), Earth);
@@ -198,7 +200,33 @@ void test::Demo3::OnImGuiRender() {
 			registry.add(bodies.back(), Jupiter);
 	}
 	if (modifyBody) {
+		ImGui::Begin("Modify body");
+		ImGui::Text("Rigid body mass ,Material and position");
+		
+		ImGui::PushItemWidth(55);
+		ImGui::InputFloat("Mass", &bodyMass);
+		ImGui::InputFloat("Coefficient of restitution", &bodyMaterial.epsilon);
+		ImGui::InputFloat("Coefficient of static friction", &bodyMaterial.mu);
+		ImGui::InputFloat("Coefficient of dynamic friction", &bodyMaterial.muDynamic);
+		ImGui::PopItemWidth();
+		ImGui::PushItemWidth(200);
+		ImGui::InputFloat3("Position", &bodyPos[0]);
+		ImGui::PopItemWidth();
 		ImGui::Separator();
+		if (sphere) {
+			ImGui::Text("Solid Sphere");
+			ImGui::PushItemWidth(55);
+			ImGui::InputFloat("Radius", &bodyRad);
+			ImGui::PopItemWidth();
+			ImGui::Separator();
+		}
+		else {
+			ImGui::PushItemWidth(200);
+			ImGui::Text("Solid Cubiod");
+			ImGui::InputFloat3("Cuboid Extents", &bodyExtents[0]);
+			ImGui::PopItemWidth();
+			ImGui::Separator();
+		}
 		ImGui::Text("Add motor joint to the rigid body");
 		ImGui::PushItemWidth(200);
 		ImGui::InputFloat3("Force", &force[0]);
@@ -222,15 +250,26 @@ void test::Demo3::OnImGuiRender() {
 		ImGui::PopItemWidth();
 		if (ImGui::Button("Add joint"))
 			Jregistry.add(modifyBody, new FixedJoint(Jpt));
-		ImGui::Separator();	
+		ImGui::Separator();
 		ImGui::PushItemWidth(200);
 		if (ImGui::Button("Apply modification")) {
-			std::cout << "updating";
 			if (cuboid)
-				cuboid->update(mass, extents);
+				cuboid->update(bodyMass, bodyExtents);
 			else
-				sphere->update(mass, rad);
+				sphere->update(bodyMass, bodyRad);
+			modifyBody->setPosition(bodyPos);
+			modifyBody->setMaterial(bodyMaterial);
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("Delete body")) {
+			registry.remove(modifyBody);
+			Jregistry.remove(modifyBody);
+			bodies.remove(modifyBody);
+			tree->remove(modifyBody);
+			delete modifyBody;
+			modifyBody = nullptr;
+		}
+		ImGui::End();
 	}
 	ImGui::Text("Camera position:(%.3f, %.3f, %.3f)", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
 }

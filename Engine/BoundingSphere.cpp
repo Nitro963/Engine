@@ -45,8 +45,10 @@ CollisionManifold BoundingSphere::findCollisionFeatures(const OBB & b) const{
 	point p = b.closestPoint(c);
 
 	res.contacts.push_back(p);
-
-	res.normal = glm::normalize(p - c);
+	if (glm::dot(p - c, p - c) > EPSILON2)
+		res.normal = glm::normalize(p - c);
+	else
+		res.normal = glm::normalize(b.c - c);
 	point outsidePoint = c + res.normal * r;
 	res.depth = glm::length(p - outsidePoint);
 	return res;

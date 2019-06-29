@@ -29,23 +29,33 @@ namespace test {
 	private:
 		bool update = 1;
 		bool debugRender = 0;
+		//initial data
 		float mass = 1;
 		float rad = 1;
+		Material material;
 		glm::vec3 pos = glm::vec3(0, 2, 0);
 		glm::vec3 extents = glm::vec3(1.f);
 		glm::vec3 force = glm::vec3(0.f);
 		glm::vec3 pt = glm::vec3(0.f);
 		glm::vec3 axis = glm::vec3(0, 0, 1);
 		glm::vec3 Jpt = glm::vec3(0.f);
+		float theta = 0;
+		//modify data
+		glm::vec3 bodyPos;
+		float bodyMass;
+		glm::vec3 bodyExtents;
+		float bodyRad;
+		Material bodyMaterial;
+		float t = 0.5f;
+		//World data
 		GravityForce* Earth = GravityForce::EarthGravity();
 		GravityForce* Moon = GravityForce::moonGravity();
 		GravityForce* Saturn = GravityForce::saturnGravity();
 		GravityForce* Jupiter = GravityForce::jupiterGravity();
 		static const char* gravity[4];
 		static const char* currentgravity;
-		float theta = 0;
+
 		bool read = 1;
-		float t = 0.5f;
 		MousePicker picker;
 		RigidBody* modifyBody;
 		SolidCuboid* cuboid;

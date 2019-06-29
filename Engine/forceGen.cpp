@@ -29,6 +29,17 @@ void ForceRegistry::remove_if(bool(*fun)(ForceRegistration &R)) {
 			++it;
 }
 
+void ForceRegistry::remove(RigidBody *& body){
+	for(auto it = registrations.begin();it != registrations.end();)
+		if (it->body == body) {
+			auto tmp = it;
+			++it;
+			registrations.erase(tmp);
+		}
+		else
+			++it;
+}
+
 void ForceRegistry::clear() {
 	registrations.clear();
 }

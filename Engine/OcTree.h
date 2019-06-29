@@ -27,6 +27,7 @@ public:
 	bool insert(RigidBody* body);
 	bool dfs();
 	void clear();
+	void remove(RigidBody*& body);
 	std::vector<ContactData*> getContacts(std::list<RigidBody*> parentList);
 	void update(const float duration);
 	void getNearest(const Ray& r, RigidBody*& body, float& t) const;

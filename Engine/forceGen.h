@@ -50,6 +50,8 @@ public:
 	//Removes the given registeration from the registry if fun returned true
 	void remove_if(bool(*fun)(ForceRegistration& R));
 
+	void remove(RigidBody*& body);
+
 	//Clears all registrations from the registry. This will
 	//not delete the rigidbodies or the force generators
 	//themselves, just the records of their connection.

@@ -3,6 +3,7 @@
 #include <iostream>
 
 #pragma region staticVar
+float RigidBody::damping = 0.99;
 std::vector<float> SolidSphere::vertices;
 std::vector<unsigned int> SolidSphere::indices;
 
@@ -74,7 +75,7 @@ void addQuad(std::vector<unsigned int>& indices, unsigned int a, unsigned int b,
 	indices.push_back(d);
 }
 
-RigidBody::RigidBody(const float mass, const glm::mat3  tensorBody, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)), forceAccum(), torqueAccum(), awake(0), alive(1) ,position(position), orientation(orientation), velocity(velocity), omega(omega) {
+RigidBody::RigidBody(const float mass, const glm::mat3 tensorBody, const Material& bodyMaterial, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)),bodyMaterial(bodyMaterial) , forceAccum(), torqueAccum(), awake(0), alive(1) ,position(position), orientation(orientation), velocity(velocity), omega(omega) {
 	//this->linearMomentum = velocity * mass;
 	rotation = glm::toMat3(orientation);
 	invTensor = rotation * invTensorBody * glm::transpose(rotation);
@@ -85,12 +86,12 @@ void RigidBody::integrate(float duration) {
 	if (isDead())
 		return;
 	velocity += forceAccum * invMass * duration;
-	velocity *= 0.99f;
+	velocity *= damping;
 
 	omega += invTensor * torqueAccum * duration;
-	omega *= 0.99f;
+	omega *= damping;
 
-	if (glm::dot(velocity, velocity) < 0.001 && glm::dot(omega, omega) < 0.001)
+	if (glm::dot(velocity, velocity) < VELOCITYLIMIT && glm::dot(omega, omega) < VELOCITYLIMIT)
 		velocity = glm::vec3(0), omega = glm::vec3(0), awake = 0;
 	else
 		awake = 1;
@@ -198,7 +199,7 @@ void SolidSphere::generateVertices() {
 	}
 }
 
-SolidSphere::SolidSphere(const float mass, const float radius, const glm::vec3  position, const glm::fquat  orientation, const glm::vec3 velocity, const glm::vec3  omega) : RigidBody(mass, generateTensor(mass, radius), position, orientation, velocity, omega), radius(radius) {
+SolidSphere::SolidSphere(const float mass, const float radius, const Material& bodyMaterial, const glm::vec3  position, const glm::fquat  orientation, const glm::vec3 velocity, const glm::vec3  omega) : RigidBody(mass, generateTensor(mass, radius), bodyMaterial, position, orientation, velocity, omega), radius(radius) {
 
 	VBO = std::make_unique<renderer::vertexbuffer>(&vertices[0], vertices.size() * sizeof(float));
 	renderer::vertexbufferlayout layout;
@@ -236,7 +237,7 @@ inline glm::mat3 SolidCuboid::generateTensor(float mass, const glm::vec3 & exten
 	return ret;
 }
 
-SolidCuboid::SolidCuboid(const float mass, const glm::vec3& extents, const glm::vec3 position, const glm::fquat orientation, const glm::vec3 velocity, const glm::vec3 omega) : RigidBody(mass, generateTensor(mass, extents), position, orientation, velocity, omega), extents(extents) {
+SolidCuboid::SolidCuboid(const float mass, const glm::vec3& extents, const Material& bodyMaterial, const glm::vec3 position, const glm::fquat orientation, const glm::vec3 velocity, const glm::vec3 omega) : RigidBody(mass, generateTensor(mass, extents), bodyMaterial, position, orientation, velocity, omega), extents(extents) {
 
 	VBO = std::make_unique<renderer::vertexbuffer>(&vertices[0], vertices.size() * sizeof(float));
 	renderer::vertexbufferlayout layout;
@@ -264,7 +265,7 @@ void SolidCuboid::render() const {
 	IBO->unbind();
 }
 
-void applyImpulse(ContactData* contact, float epsilon) {
+void applyImpulse(ContactData* contact) {
 	float invMassSum = contact->B->invMass + contact->A->invMass;
 
 	if (invMassSum < EPSILON)
@@ -280,7 +281,7 @@ void applyImpulse(ContactData* contact, float epsilon) {
 		// if the objects are Moving away from each other at p we will skip it 
 		if (vrel > 0.f)
 			continue;
-		
+		float epsilon = glm::min(contact->A->bodyMaterial.epsilon, contact->B->bodyMaterial.epsilon);
 		float numerator = -(1.f + epsilon) * vrel;
 
 		glm::vec3 term1 = glm::cross(contact->A->invTensor * glm::cross(ra, contact->M->normal), ra);
@@ -303,12 +304,12 @@ void applyImpulse(ContactData* contact, float epsilon) {
 		contact->A->omega -= contact->A->invTensor * torqueA;
 		contact->B->omega += contact->B->invTensor * torqueB;
 		
-		glm::vec3 t = relativeVel - (contact->M->normal * glm::dot(relativeVel, contact->M->normal));
+		glm::vec3 t = relativeVel - (contact->M->normal * vrel);
 		if (glm::dot(t, t) < EPSILON2)
 			continue;
 		t = glm::normalize(t);
 
-		numerator = -glm::dot(relativeVel, t);
+		numerator = -(1 + epsilon) * glm::dot(relativeVel, t);
 
 		term1 = glm::cross(contact->A->invTensor * glm::cross(ra, t), ra);
 		term2 = glm::cross(contact->B->invTensor * glm::cross(rb, t), rb);
@@ -321,11 +322,19 @@ void applyImpulse(ContactData* contact, float epsilon) {
 			continue;
 		jt /= contact->M->contacts.size();
 
-		float friction = glm::sqrt(0.6 * 0.6);
+		float friction = glm::sqrt(contact->A->bodyMaterial.mu * contact->B->bodyMaterial.mu);
 
 		jt = glm::clamp(jt, -j * friction, j * friction);
 
 		glm::vec3 tangentImpuse = t * jt;
+
+		if (vrel < -0.01) {
+			//dynamic friction
+			float df = sqrtf(contact->A->bodyMaterial.muDynamic * contact->B->bodyMaterial.muDynamic);
+			if (glm::abs(jt) > j * friction)
+				tangentImpuse = -j * t * df;
+		}
+
 		torqueA = glm::cross(ra, tangentImpuse);
 		torqueB = glm::cross(rb, tangentImpuse);
 
@@ -339,7 +348,6 @@ void applyImpulse(ContactData* contact, float epsilon) {
 			contact->A->awake = 1;
 		if (glm::dot(contact->B->velocity, contact->B->velocity) > 0.01 || glm::dot(contact->B->omega, contact->B->omega) > 0.01)
 			contact->B->awake = 1;
-
 	}
 }
 
@@ -352,7 +360,7 @@ void resolveInterpentration(ContactData* contact) {
 
 	float depth = glm::max(contact->M->depth - 0.01f, 0.0f);
 	float scalar = depth / totalMass;
-	glm::vec3 correction = contact->M->normal * scalar * 0.45f;
+	glm::vec3 correction = contact->M->normal * scalar * 0.6f;
 
 	contact->A->position -= correction * contact->A->invMass;
 	contact->B->position += correction * contact->B->invMass;
