@@ -74,12 +74,15 @@ void DragForce::updateForce(RigidBody * RigidBody, float duration) {
 }
 
 void MotorJoint::updateForce(RigidBody * RigidBody, float duration) {
-	RigidBody->applyImpulse(pt, force * duration);
+	if(RigidBody->contains(pt))
+		RigidBody->applyImpulse(force * duration,glm::cross(pt, force) * duration);
 }
 
 void TimedMotorJoint::updateForce(RigidBody * RigidBody, float duration){
+	if (!RigidBody->contains(pt))
+		return;
 	if (t > EPSILON) {
-		RigidBody->applyImpulse(pt, force * duration);
+		RigidBody->applyImpulse(force * duration, glm::cross(pt, force) * duration);
 		t -= duration;
 	}
 }

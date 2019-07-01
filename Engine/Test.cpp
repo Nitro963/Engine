@@ -14,7 +14,7 @@ namespace test {
 	void TestMenu::OnRender(){
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 		GLCall(glClearColor(0.f, 0.f, 0.f, 0.f));
-		cubeMap->draw();
+		cubeMap->render();
 	}
 	void TestMenu::OnImGuiRender(){
 		for (auto& test : m_tests)

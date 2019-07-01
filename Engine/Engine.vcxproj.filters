@@ -150,6 +150,9 @@
     <ClCompile Include="Demo3.cpp">
       <Filter>Source Files\Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Demo4.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RigidBody.h">
@@ -252,6 +255,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Demo3.h">
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Demo4.h">
       <Filter>Header Files\Tests</Filter>
     </ClInclude>
   </ItemGroup>

@@ -126,6 +126,7 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="Demo2.cpp" />
     <ClCompile Include="Demo3.cpp" />
+    <ClCompile Include="Demo4.cpp" />
     <ClCompile Include="forceGen.cpp" />
     <ClCompile Include="indexbuffer.cpp" />
     <ClCompile Include="Joint.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="Demo2.h" />
     <ClInclude Include="Demo3.h" />
+    <ClInclude Include="Demo4.h" />
     <ClInclude Include="forceGen.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="indexbuffer.h" />

@@ -18,13 +18,12 @@ void main(){
 #version 330 core
 in vec3 pos;
 out vec4 FragColor;
-
 void main(){
-	if(pos.y < 0)
-		FragColor = vec4(1.f);
+	if (pos.y < 0)
+		FragColor = vec4(1.f, 0.f, 0.f, 1.f);
 	else
-		if(pos.x < 0)
-			FragColor = vec4(1.f, 0.f, 0.f, 1.f);
+		if (pos.x < 0)
+			FragColor = vec4(0.f, 1.f, 0.f, 1.f);
 		else
-			FragColor = vec4(0, 1, 0, 1);
+			FragColor = vec4(1.0f, 0.5f, 0.7f,1.f);
 };

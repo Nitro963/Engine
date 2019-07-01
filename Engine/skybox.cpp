@@ -82,7 +82,7 @@ namespace renderer {
 		GLCall(glDeleteTextures(1, &m_id));
 	}
 
-	void skybox::draw() {
+	void skybox::render() {
 		glm::mat4 view = glm::mat4(glm::mat3(::camera.getViewMatrix()));
 		glm::mat4 projection = glm::perspective(glm::radians(::camera.getZoom()), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
 		m_Shader->use();

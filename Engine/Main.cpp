@@ -22,6 +22,7 @@
 #include "Demo1.h"
 #include "Demo2.h"
 #include "Demo3.h"
+#include "Demo4.h"
 
 #pragma region auxiliary
 renderer::camera camera(glm::vec3(12, 12, 12));
@@ -99,7 +100,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Engine", NULL, NULL);
+	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Genie Engine", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return -1;
@@ -142,6 +143,7 @@ int main() {
 	testMenu->registerTest<test::Demo1>("Demo1");
 	testMenu->registerTest<test::Demo2>("Demo2");
 	testMenu->registerTest<test::Demo3>("Demo3");
+	testMenu->registerTest<test::Demo4>("Demo4");
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwSwapInterval(1);

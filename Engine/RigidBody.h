@@ -25,8 +25,8 @@ struct Material {
 	float epsilon;
 	float mu;
 	float muDynamic;
-	Material() : shininess(32), epsilon(0.7), mu(0.5) ,muDynamic(0.3) {}
-	Material(const float& shininess, const float& epsilon, const float& mu) : shininess(shininess), epsilon(epsilon), mu(mu){}
+	Material() : shininess(32), epsilon(0.7), mu(0.5), muDynamic(0.3) {}
+	Material(const float& shininess, const float& epsilon, const float& mu) : shininess(shininess), epsilon(epsilon), mu(mu) {}
 };
 
 class RigidBody {
@@ -40,8 +40,7 @@ public:
 
 	void syncColliders();
 
-	//point is given in local space
-	virtual void applyImpulse(const glm::vec3& point, const glm::vec3& impulse);
+	virtual void applyImpulse(const glm::vec3& impulse, const glm::vec3& impulsiveTorque);
 
 	void applyImpulse(const glm::vec3& impulse);
 
@@ -73,8 +72,8 @@ public:
 	const glm::vec3 getParticleVelocity(const glm::vec3& point) const {
 		return velocity + glm::cross(omega, transform(point));
 	}
-	
-	inline const float getInverseMass() const{ return invMass; }
+
+	inline const float getInverseMass() const { return invMass; }
 
 	inline const float getMass() const { return 1 / invMass; }
 
@@ -106,7 +105,9 @@ public:
 		this->bodyMaterial = bodyMaterial;
 	}
 
-	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const { return glm::identity<glm::mat4>(); }
+	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const = 0;
+
+	inline virtual const bool contains(const point& p) const = 0;
 
 	inline void kill() { alive = 0; }
 
@@ -115,7 +116,7 @@ public:
 	inline bool isDead() const { return !alive; }
 
 	virtual void render() const {};
-	
+
 	friend void resolveContact(struct ContactData* contact);
 
 	friend void resolveInterpentration(struct ContactData* contact);
@@ -139,7 +140,7 @@ protected:
 	//int colliderType;
 	std::unique_ptr<BoundingSphere> collider1;
 	std::unique_ptr<OBB> collider2;
-	
+
 	bool awake;
 	bool alive;
 
@@ -150,14 +151,12 @@ inline bool isDead(RigidBody*& body) {
 	return body->isDead();
 }
 
-class SolidSphere : public RigidBody{
+class SolidSphere : public RigidBody {
 public:
 	SolidSphere(const float mass, const float radius, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
-	virtual void applyImpulse(const glm::vec3& point, const glm::vec3& Impulse) override;
-	
 	inline float getRadius() { return radius; }
-	
+
 	inline void update(float mass, float radius) {
 		invMass = 1 / mass;
 		tensorBody = generateTensor(mass, radius);
@@ -172,7 +171,11 @@ public:
 		model = glm::scale(model, glm::vec3(radius));
 		return model;
 	};
-
+	inline virtual const bool contains(const glm::vec3& p) const override {
+		if (glm::dot(p, p) - radius * radius > EPSILON2)
+			return false;
+		return true;
+	}
 	virtual void render() const override;
 	static void generateVertices();
 
@@ -188,14 +191,12 @@ private:
 	std::unique_ptr<renderer::indexbuffer> IBO;
 };
 
-class SolidCuboid : public RigidBody{
+class SolidCuboid : public RigidBody {
 public:
 	SolidCuboid(const float mass, const glm::vec3& extens, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
 
-	virtual void applyImpulse(const glm::vec3& point, const glm::vec3& impulse) override;
-
 	inline const glm::vec3& getExtents() { return extents; }
-	
+
 	inline void update(float mass, const glm::vec3 extents) {
 		invMass = 1 / mass;
 		tensorBody = generateTensor(mass, extents);
@@ -210,7 +211,12 @@ public:
 		model = glm::scale(model, extents);
 		return model;
 	};
-
+	inline virtual const bool contains(const glm::vec3& p) const override {
+		glm::vec3 diff = glm::clamp(p, -extents * 0.5f, extents * 0.5f) - p;
+		if (glm::dot(diff, diff) > EPSILON2)
+			return false;
+		return true;
+	}
 	virtual void render() const override;
 
 private:

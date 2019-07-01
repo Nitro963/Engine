@@ -1,5 +1,5 @@
-#ifndef DEMO3_H
-#define DEMO3_H
+#ifndef DEMO4_H
+#define DEMO4_H
 #include "Test.h"
 #include "RigidBody.h"
 #include "forceGen.h"
@@ -16,14 +16,14 @@
 extern renderer::camera camera;
 extern const unsigned int SCR_WIDTH;
 extern const unsigned int SCR_HEIGHT;
-
+extern int Ndir;
 namespace test {
-	class Demo3 :public Test {
+	class Demo4 :public Test {
 	public:
-		Demo3();
+		Demo4();
 		void init();
 		void reset();
-		~Demo3();
+		~Demo4();
 		void OnRender() override;
 		void OnImGuiRender() override;
 	private:
@@ -68,4 +68,4 @@ namespace test {
 		DirLight light;
 	};
 }
-#endif // !DEMO3_H
+#endif // !DEMO4_H

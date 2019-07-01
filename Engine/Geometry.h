@@ -101,6 +101,6 @@ inline glm::mat3 star(const glm::vec3 ve) {
 	m[1][2] = -ve.x;
 	m[2][0] = -ve.y;
 	m[2][1] = ve.x;
-	return m;
+	return transpose(m);
 }
 #endif // !GEOMETRY_H

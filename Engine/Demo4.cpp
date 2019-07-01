@@ -1,12 +1,10 @@
-#include "Demo3.h"
+#include "Demo4.h"
 
-const char* test::Demo3::gravity[4] = { "Earth","Moon","Saturn","Jupiter" };
+const char* test::Demo4::gravity[4] = { "Earth","Moon","Saturn","Jupiter" };
 
-const char* test::Demo3::currentgravity = test::Demo3::gravity[0];
+const char* test::Demo4::currentgravity = test::Demo4::gravity[0];
 
-int Ndir = 1;
-int Nspot = 0;
-test::Demo3::Demo3() : picker(&modifyBody, &read){
+test::Demo4::Demo4() : picker(&modifyBody, &read) {
 	camera = renderer::camera(glm::vec3(12.f), glm::vec3(0.f, 1.f, 0.f), -135.f, -30.f);
 	tree = new OcTree(glm::vec3(0.f), 32);
 	init();
@@ -17,14 +15,19 @@ test::Demo3::Demo3() : picker(&modifyBody, &read){
 	light.direction = glm::vec3(0.f, 0.f, 1.f);
 }
 
-void test::Demo3::init() {
+void test::Demo4::init() {
 	modifyBody = nullptr;
 	bodies.push_back(new SolidCuboid(1e12, glm::vec3(16, 2, 16), Material(), glm::vec3(0, 0, 0)));
 	tree->insert(bodies.back());
 	currentgravity = gravity[0];
+	bodies.push_back(new SolidSphere(12, 1, Material(), glm::vec3(0, 3, 0)));
+	tree->insert(bodies.back());
+	Jregistry.add(bodies.back(), new FixedJoint(bodies.back()->getPosition()));
+	registry.add(bodies.back(), Earth);
+	registry.add(bodies.back(), new MotorJoint(glm::vec3(0,0,-60),glm::vec3(1, 0, 0)));
 }
 
-void test::Demo3::reset() {
+void test::Demo4::reset() {
 	update = 1;
 	tree->clear();
 	registry.clear();
@@ -35,7 +38,7 @@ void test::Demo3::reset() {
 	init();
 }
 
-test::Demo3::~Demo3() {
+test::Demo4::~Demo4() {
 	delete tree;
 	registry.clear();
 	Jregistry.clear();
@@ -49,7 +52,7 @@ test::Demo3::~Demo3() {
 	delete Jupiter;
 }
 
-void test::Demo3::OnRender() {
+void test::Demo4::OnRender() {
 	if (debugRender) {
 		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 	}
@@ -71,7 +74,6 @@ void test::Demo3::OnRender() {
 	mainShader->set_uniform<glm::vec3>("dirLight[0].specular", light.specular * 0.2f);
 	mainShader->set_uniform<glm::vec3>("dirLight[0].direction", light.direction);
 	mainShader->set_uniform<int>("NdirLight", Ndir);
-
 	glm::vec3 viewPos = camera.getPosition();
 	mainShader->set_uniform<glm::vec3>("view_pos", viewPos);
 	//mask active branches and update nodes life span
@@ -125,7 +127,7 @@ void test::Demo3::OnRender() {
 		}
 		mainShader->set_uniform<int>("useUniformColor", use);
 		if (use) {
-			mainShader->set_uniform<glm::vec3>("uColor", glm::vec3(43,78,136) / 255.f);
+			mainShader->set_uniform<glm::vec3>("uColor", glm::vec3(43, 78, 136) / 255.f);
 			use = false;
 		}
 		float shin = body->getMaterial().shininess;
@@ -137,7 +139,7 @@ void test::Demo3::OnRender() {
 	}
 }
 
-void test::Demo3::OnImGuiRender() {
+void test::Demo4::OnImGuiRender() {
 	if (modifyBody) {
 		if (read) {
 			cuboid = nullptr;
@@ -222,7 +224,7 @@ void test::Demo3::OnImGuiRender() {
 	if (modifyBody) {
 		ImGui::Begin("Modify body");
 		ImGui::Text("Rigid body mass ,Material and position");
-		
+
 		ImGui::PushItemWidth(55);
 		ImGui::InputFloat("Mass", &bodyMass);
 		ImGui::InputFloat("Coefficient of restitution", &bodyMaterial.epsilon);
@@ -262,7 +264,7 @@ void test::Demo3::OnImGuiRender() {
 			registry.add(modifyBody, new TimedMotorJoint(t, force, pt));
 		ImGui::SameLine();
 		if (ImGui::Button("Apply force Once"))
-			modifyBody->applyImpulse(force,cross(pt,force));
+			modifyBody->applyImpulse(force, cross(pt, force));
 		ImGui::Separator();
 		ImGui::Text("Add a fixed joint");
 		ImGui::PushItemWidth(200);

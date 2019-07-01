@@ -27,7 +27,7 @@ namespace renderer {
 	public:
 		skybox(const std::vector<std::string>& faces);
 		~skybox();
-		void draw();
+		void render();
 	};
 }
 #endif // !SKYBOX_H

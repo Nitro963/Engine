@@ -30,7 +30,6 @@ CollisionManifold BoundingSphere::findCollisionFeatures(const BoundingSphere & b
 		res.normal = glm::normalize(closest_point - c);
 	else
 		res.normal = glm::normalize(b.c - closest_point);
-	glm::vec3 outsidePoint = c + res.normal * r;
 	res.depth = r + b.r - glm::length(b.c - c);
 	res.contacts.push_back(closest_point);
 	return res;
@@ -49,7 +48,7 @@ CollisionManifold BoundingSphere::findCollisionFeatures(const OBB & b) const{
 		res.normal = glm::normalize(p - c);
 	else
 		res.normal = glm::normalize(b.c - c);
-	point outsidePoint = c + res.normal * r;
+	point outsidePoint = c + res.normal * r;//a point on the edge of the sphere in the direction of the normal
 	res.depth = glm::length(p - outsidePoint);
 	return res;
 }

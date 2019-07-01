@@ -8,36 +8,35 @@ std::vector<float> SolidSphere::vertices;
 std::vector<unsigned int> SolidSphere::indices;
 
 std::vector<float> SolidCuboid::vertices = {
--0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,
-0.5f, -0.5f, -0.5f,	  0.0f,  0.0f, -1.0f,
-0.5f, 0.5f, -0.5f,	  0.0f,  0.0f, -1.0f,
--0.5f, 0.5f, -0.5f,	   0.0f,  0.0f, -1.0f,
+-0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f, .2f, 0.7f, 0.6f,
+0.5f, -0.5f, -0.5f,	  0.0f,  0.0f, -1.0f, 0.2f, 0.7f, 0.6f,
+0.5f, 0.5f, -0.5f,	  0.0f,  0.0f, -1.0f, 0.2f, 0.7f, 0.6f,
+-0.5f, 0.5f, -0.5f,	   0.0f,  0.0f, -1.0f, .2f, 0.7f, 0.6f,
 
+-0.5f, -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 0.2f, 0.5f, 0.6f,
+0.5f, -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 0.2f, 0.5f, 0.6f,
+0.5f, 0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 0.2f, 0.5f, 0.6f,
+-0.5f, 0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 0.2f, 0.5f, 0.6f,
 
--0.5f, -0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
-0.5f, -0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
-0.5f, 0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
--0.5f, 0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
+-0.5f, 0.5f, 0.5f, -1.0f,  0.0f,  0.0f, 0.2f, 0.5f, 0.6f,
+-0.5f, 0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.2f, 0.5f, 0.6f,
+-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.2f, 0.5f, 0.6f,
+-0.5f, -0.5f, 0.5f, -1.0f,  0.0f,  0.0f, 0.2f, 0.5f, 0.6f,
 
--0.5f, 0.5f, 0.5f, -1.0f,  0.0f,  0.0f,
--0.5f, 0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
--0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
--0.5f, -0.5f, 0.5f, -1.0f,  0.0f,  0.0f,
+0.5f, 0.5f, 0.5f, 1.0f,  0.0f,  0.0f, 0.2f, 0.7f, 0.6f,
+0.5f, 0.5f, -0.5f, 1.0f,  0.0f,  0.0f, 0.2f, 0.7f, 0.6f,
+0.5f, -0.5f, -0.5f, 1.0f,  0.0f,  0.0f, 0.2f, 0.7f, 0.6f,
+0.5f, -0.5f, 0.5f, 1.0f,  0.0f,  0.0f, 0.2f, 0.7f, 0.6f,
 
-0.5f, 0.5f, 0.5f, 1.0f,  0.0f,  0.0f,
-0.5f, 0.5f, -0.5f, 1.0f,  0.0f,  0.0f,
-0.5f, -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,
-0.5f, -0.5f, 0.5f, 1.0f,  0.0f,  0.0f,
+-0.5f, -0.5f, -0.5f, 0.0f, -1.0f,  0.0f, 0.2f, 0.7f, 0.6f,
+0.5f, -0.5f, -0.5f, 0.0f, -1.0f,  0.0f, 0.2f, 0.7f, 0.6f,
+0.5f, -0.5f, 0.5f, 0.0f, -1.0f,  0.0f, 0.2f, 0.7f, 0.6f,
+-0.5f, -0.5f, 0.5f, 0.0f, -1.0f,  0.0f, 0.2f, 0.7f, 0.6f,
 
--0.5f, -0.5f, -0.5f, 0.0f, -1.0f,  0.0f,
-0.5f, -0.5f, -0.5f, 0.0f, -1.0f,  0.0f,
-0.5f, -0.5f, 0.5f, 0.0f, -1.0f,  0.0f,
--0.5f, -0.5f, 0.5f, 0.0f, -1.0f,  0.0f,
-
--0.5f, 0.5f, -0.5f, 0.0f,  1.0f,  0.0f,
-0.5f, 0.5f, -0.5f, 0.0f,  1.0f,  0.0f,
-0.5f, 0.5f, 0.5f, 0.0f,  1.0f,  0.0f,
--0.5f, 0.5f, 0.5f, 0.0f,  1.0f,  0.0f,
+-0.5f, 0.5f, -0.5f, 0.0f,  1.0f,  0.0f,0.2f, 0.5f, 0.6f,
+0.5f, 0.5f, -0.5f, 0.0f,  1.0f,  0.0f, 0.2f, 0.5f, 0.6f,
+0.5f, 0.5f, 0.5f, 0.0f,  1.0f,  0.0f,  0.2f, 0.5f, 0.6f,
+-0.5f, 0.5f, 0.5f, 0.0f,  1.0f,  0.0f, 0.2f, 0.5f, 0.6f,
 };
 std::vector<unsigned int> SolidCuboid::indices = {
 	0, 1, 2,
@@ -75,7 +74,7 @@ void addQuad(std::vector<unsigned int>& indices, unsigned int a, unsigned int b,
 	indices.push_back(d);
 }
 
-RigidBody::RigidBody(const float mass, const glm::mat3 tensorBody, const Material& bodyMaterial, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)),bodyMaterial(bodyMaterial) , alive(1) ,position(position), orientation(orientation), velocity(velocity), omega(omega) {
+RigidBody::RigidBody(const float mass, const glm::mat3 tensorBody, const Material& bodyMaterial, const glm::vec3&  position, const glm::fquat& orientation, const glm::vec3&  velocity, const glm::vec3& omega) : invMass(1.f / mass), tensorBody(tensorBody), invTensorBody(glm::inverse(tensorBody)), bodyMaterial(bodyMaterial), alive(1), position(position), orientation(orientation), velocity(velocity), omega(omega) {
 	rotation = glm::toMat3(orientation);
 	invTensor = rotation * invTensorBody * glm::transpose(rotation);
 
@@ -124,10 +123,10 @@ void RigidBody::calcDerivedQuantities() {
 	//omega = invTensor * angularMomentum * 0.8f;
 }
 
-void RigidBody::applyImpulse(const glm::vec3& point, const glm::vec3& impulse) {
+void RigidBody::applyImpulse(const glm::vec3& impulse, const glm::vec3& impulsiveTorque) {
 	velocity += impulse * invMass;
 
-	omega += invTensor * glm::cross(point, impulse);
+	omega += invTensor * impulsiveTorque;
 }
 
 void RigidBody::applyImpulse(const glm::vec3 & impulse) {
@@ -172,13 +171,17 @@ void SolidSphere::generateVertices() {
 			glm::vec3 vn = glm::normalize(v);
 			glm::vec3 u(x * zr1, y * zr1, z1);
 			glm::vec3 un = glm::normalize(u);
-			
+
 			vertices.push_back(v.x);
 			vertices.push_back(v.y);
 			vertices.push_back(v.z);
 			vertices.push_back(vn.x);
 			vertices.push_back(vn.y);
 			vertices.push_back(vn.z);
+
+			vertices.push_back(0.f);
+			vertices.push_back(i < 20 ? 1.f : 0.5);
+			vertices.push_back(0.4);
 
 			indices.push_back(indicator++);
 
@@ -188,6 +191,10 @@ void SolidSphere::generateVertices() {
 			vertices.push_back(un.x);
 			vertices.push_back(un.y);
 			vertices.push_back(un.z);
+
+			vertices.push_back(0.f);
+			vertices.push_back(i < 20 ? 1.f : 0.5);
+			vertices.push_back(0.4);
 
 			indices.push_back(indicator++);
 		}
@@ -201,17 +208,12 @@ SolidSphere::SolidSphere(const float mass, const float radius, const Material& b
 	renderer::vertexbufferlayout layout;
 	layout.push<float>(3);
 	layout.push<float>(3);
+	layout.push<float>(3);
 	VAO = std::make_unique<renderer::vertexarray>();
 	VAO->addbuffer(*VBO, layout);
 	IBO = std::make_unique<renderer::indexbuffer>(&indices[0], indices.size());
 
 	collider1 = std::make_unique<BoundingSphere>(position, radius);
-}
-
-void SolidSphere::applyImpulse(const glm::vec3& point, const glm::vec3& impulse) {
-	if (glm::dot(point, point) - radius * radius > EPSILON2)
-		return;
-	RigidBody::applyImpulse(point, impulse);
 }
 
 void SolidSphere::render() const {
@@ -239,18 +241,12 @@ SolidCuboid::SolidCuboid(const float mass, const glm::vec3& extents, const Mater
 	renderer::vertexbufferlayout layout;
 	layout.push<float>(3);
 	layout.push<float>(3);
+	layout.push<float>(3);
 	VAO = std::make_unique<renderer::vertexarray>();
 	VAO->addbuffer(*VBO, layout);
 	IBO = std::make_unique<renderer::indexbuffer>(&indices[0], indices.size());
 
 	collider2 = std::make_unique<OBB>(position, rotation, extents * 0.5f);
-}
-
-void SolidCuboid::applyImpulse(const glm::vec3 & point, const glm::vec3 & impulse) {
-	glm::vec3 diff = glm::clamp(point, -extents * 0.5f, extents * 0.5f) - point;
-	if (glm::dot(diff, diff) > EPSILON2)
-		return;
-	RigidBody::applyImpulse(point, impulse);
 }
 
 void SolidCuboid::render() const {
@@ -291,6 +287,7 @@ void resolveContact(ContactData* contact) {
 		j /= contact->M->contacts.size();
 
 		glm::vec3 impulse = j * contact->M->normal;
+
 		glm::vec3 torqueA = glm::cross(ra, impulse);
 		glm::vec3 torqueB = glm::cross(rb, impulse);
 
@@ -299,7 +296,7 @@ void resolveContact(ContactData* contact) {
 
 		contact->A->omega -= contact->A->invTensor * torqueA;
 		contact->B->omega += contact->B->invTensor * torqueB;
-		
+
 		glm::vec3 t = relativeVel - (contact->M->normal * vrel);
 		if (glm::dot(t, t) < EPSILON2)
 			continue;
@@ -328,7 +325,7 @@ void resolveContact(ContactData* contact) {
 			//dynamic friction
 			float df = sqrtf(contact->A->bodyMaterial.muDynamic * contact->B->bodyMaterial.muDynamic);
 			if (glm::abs(jt) > j * friction)
-				tangentImpuse = -j * t * df;
+				tangentImpuse = -j * t * df;//lenght of normal force * tangent * Coefficient of dynamic friction
 		}
 
 		torqueA = glm::cross(ra, tangentImpuse);
