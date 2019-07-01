@@ -3,10 +3,10 @@
 #include"basic.h"
 #include<iostream>
 
-void glclearerror() {
+void glClearError() {
 	while (glGetError());
 }
-bool gllogcall(const char* function, const char* file, int line) {
+bool glLogCall(const char* function, const char* file, int line) {
 	while (GLenum error = glGetError()) {
 		std::cout << "[OpenGl Error] (" << error << ") " << function << " " << file << " " << line << "\n";
 		return false;

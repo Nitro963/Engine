@@ -5,41 +5,55 @@
 #include "AABB.h"
 #include "OBB.h"
 #include <iostream>
-class plane {
+class Plane {
 public:
+	//default constructor
+	Plane() : n(), d(0) {}
 	// Given three noncollinear points (ordered ccw), compute plane equation
-	plane(const point& a, const point& b, const point& c) {
-		n = glm::normalize(glm::cross(b - a, c - a));
-		d = glm::dot(n, a);
-	}
+	Plane(const point& a, const point& b, const point& c) : n(glm::normalize(glm::cross(b - a, c - a))) ,d(glm::dot(n ,a)){}
+	
+	//Given a normal and a point on the plane
+	Plane(const glm::vec3& n, const point& a) : n(n) ,d(glm::dot(n ,a)){}
+	
+	//Given a normal and the distance
+	Plane(const glm::vec3& n, float d) :n(n), d(d) {}
 
 	//Points x on the plane satisfy Dot(n, x) = d
-	inline bool inside(const point& p) { return glm::abs(glm::dot(n, p) - d) < EPSILON; }
+	inline bool inside(const point& p) const { return glm::abs(glm::dot(n, p) - d) < EPSILON; }
 	
 	// Determine whether the plane intersects sphere s
-	bool testSphere(const boundingSphere& s) const;
+	bool intersect(const BoundingSphere& s) const;
 	
 	// Determine whether sphere s is fully behind (inside negative halfspace of) the plane
-	bool insideNegHalfSpace(const boundingSphere& s) const;
+	bool insideNegHalfSpace(const BoundingSphere& s) const;
 	
 	// Determine whether sphere s intersects negative halfspace of the plane 
-	bool intersectNegHalfSpace(const boundingSphere& s) const;
+	bool intersectNegHalfSpace(const BoundingSphere& s) const;
 	
 	// Test if OBB b intersects the plane
-	bool testOBB(const OBB& b) const;
+	bool intersect(const OBB& b) const;
 
-	// Test if AABB b intersects plane p
-	bool testAABB(const AABB& b) const;
+	// Test if AABB b intersects the plane
+	bool intersect(const AABB& b) const;
 
-	// Given point p, return the point q on the plane that is closest to p
+	// Test if Line segement intersect the plane
+	bool intersect(const Line& seg) const;
+
+	// if Line segement intersect the plane return p the intersection point
+	bool clip(const Line& seg, point& p) const;
+
+	// Given point p, return the point on the plane that is closest to p
 	point closestPoint(const point& p) const;
 
 	// calculate the distance between the plane and a point q
 	float distPoint(const point& q) const;
 
+	inline const glm::vec3& getNormal() { return n; }
+	inline const float& getDistance() { return d; }
 private:
-	glm::vec3 n; // Plane normal. Points x on the plane satisfy Dot(n,x) = d
-	float d; // d = dot(n,p) for a given point p on the plane
+	glm::vec3 n; // Plane normal.
+	float d; // Points x on the plane satisfy Dot(n,x) = d
+	friend class Ray;
 };
 
 #endif // !PLANE_H

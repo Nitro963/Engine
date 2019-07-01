@@ -126,6 +126,33 @@
     <ClCompile Include="TestClearColor.cpp">
       <Filter>Source Files\Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Test.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Demo1.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="OcTree.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="MousePicker.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="Ray.cpp">
+      <Filter>Source Files\Collision Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="Demo2.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Joint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Demo3.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Demo4.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RigidBody.h">
@@ -200,14 +227,38 @@
     <ClInclude Include="skybox.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="forceGen.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Test.h">
       <Filter>Header Files\Tests</Filter>
     </ClInclude>
     <ClInclude Include="TestClearColor.h">
-      <Filter>Source Files\Tests</Filter>
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Demo1.h">
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="forceGen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OcTree.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="Demo2.h">
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="MousePicker.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>Header Files\Collision Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="Joint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Demo3.h">
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Demo4.h">
+      <Filter>Header Files\Tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -218,6 +269,9 @@
       <Filter>Resource Files\res\shaders</Filter>
     </None>
     <None Include="res\Shaders\floor.shader">
+      <Filter>Resource Files\res\shaders</Filter>
+    </None>
+    <None Include="res\Shaders\multipleLightsCasters.shader">
       <Filter>Resource Files\res\shaders</Filter>
     </None>
   </ItemGroup>

@@ -11,7 +11,7 @@ namespace renderer {
 		~indexbuffer();
 		void bind() const;
 		void unbind() const;
-		inline unsigned int getcount() { return count; };
+		inline unsigned int getcount() { return count; }
 	};
 }
 #endif

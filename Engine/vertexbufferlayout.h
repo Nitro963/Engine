@@ -35,25 +35,25 @@ namespace renderer {
 
 		template<>
 		void push<float>(unsigned int count) {
-			m_element.push_back({ GL_FLOAT ,count ,GL_FALSE });
+			m_element.push_back({ GL_FLOAT, count, GL_FALSE });
 			m_stride += count *  vertexbufferelement::getsize(GL_FLOAT);
 		}
 
 		template<>
 		void push<unsigned int>(unsigned int count) {
-			m_element.push_back({ GL_UNSIGNED_INT ,count ,GL_FALSE });
+			m_element.push_back({ GL_UNSIGNED_INT, count, GL_FALSE });
 			m_stride += count * vertexbufferelement::getsize(GL_UNSIGNED_INT);
 		}
 
 		template<>
 		void push<int>(unsigned int count) {
-			m_element.push_back({ GL_INT ,count ,GL_FALSE });
+			m_element.push_back({ GL_INT, count, GL_FALSE });
 			m_stride += count * vertexbufferelement::getsize(GL_INT);
 		}
 
 		template<>
 		void push<unsigned char>(unsigned int count) {
-			m_element.push_back({ GL_UNSIGNED_BYTE ,count ,GL_TRUE });
+			m_element.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE });
 			m_stride += count * vertexbufferelement::getsize(GL_UNSIGNED_BYTE);
 		}
 

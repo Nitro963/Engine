@@ -11,7 +11,7 @@ namespace renderer {
 
 	indexbuffer::~indexbuffer() {
 		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-		GLCall(glDeleteBuffers(GL_ELEMENT_ARRAY_BUFFER, &id));
+		GLCall(glDeleteBuffers(1, &id));
 	}
 
 	void indexbuffer::bind() const {

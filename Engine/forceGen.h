@@ -5,17 +5,16 @@
 
 /**
 * A force generator can be asked to add a force to one or more
-* rigidbodyies.
+* rigidbodies.
 */
-class ForceGenerator{
+class ForceGenerator {
 public:
 	/**
 	* Overload this in implementations of the interface to calculate
-	* and update the force applied to the given rigidBody.
-	*/
-	virtual void updateForce(RigidBody *rigidBody ,float duration) = 0;
+	* and update the force applied to the given rigidBody.*/
+	virtual void updateForce(RigidBody *rigidBody, float duration) = 0;
 };
-
+class TimedMotorJoint;
 /**
 * Holds all the force generators and the rigidBodies they apply to.
 */
@@ -27,54 +26,42 @@ protected:
 	* Keeps track of one force generator and the rigidBody it
 	* applies to.
 	*/
-	struct ForceRegistration{
+	struct ForceRegistration {
 		RigidBody* body;
 		ForceGenerator *fg;
-		
+
 		bool operator == (const ForceRegistration other) const {
 			return other.body == body && other.fg == fg;
 		}
-		
-		ForceRegistration(RigidBody* rigidBody, ForceGenerator* fg) {
-			this->body = rigidBody;
-			this->fg = fg;
-		}
+
+		ForceRegistration(RigidBody* rigidBody, ForceGenerator* fg) : body(rigidBody), fg(fg) {}
 	};
 
-	/**
-	* Holds the list of registrations.
-	*/
-
-	//typedef std::list<rigidBodyForceRegistration> Registry;
-
 	std::list<ForceRegistration> registrations;
-
 public:
+	//Registers the given force generator to apply to the
+	//given rigidBody.
 
-	/**
-	* Registers the given force generator to apply to the
-	* given rigidBody.
-	*/
 	void add(RigidBody* rigidBody, ForceGenerator *fg);
 
-	/**
-	* Removes the given registered pair from the registry.
-	* If the pair is not registered, this method will have
-	* no effect.
-	*/
-	void remove(RigidBody* rigidBody, ForceGenerator *fg);
+	//Removes the given registered body from the registry if fun returned true
+	void remove_if(bool(*fun)(RigidBody*&));
 
-	/**
-	* Clears all registrations from the registry. This will
-	* not delete the rigidbodyies or the force generators
-	* themselves, just the records of their connection.
-	*/
+	//Removes the given registeration from the registry if fun returned true
+	void remove_if(bool(*fun)(ForceRegistration& R));
+
+	void remove(RigidBody*& body);
+
+	void remove(ForceGenerator* fg);
+
+	//Clears all registrations from the registry. This will
+	//not delete the rigidbodies or the force generators
+	//themselves, just the records of their connection.
+
 	void clear();
 
-	/**
-	* Calls all the force generators to update the forces of
-	* their corresponding rigidbodyies.
-	*/
+	//Calls all the force generators to update the forces of
+	//their corresponding rigidbodies.	
 	void updateForces(float duration);
 };
 
@@ -82,25 +69,30 @@ public:
 * A force generator that applies a gravitational force. One instance
 * can be used for multiple rigidBodies.
 */
-class GravityForce : public ForceGenerator{
+class GravityForce : public ForceGenerator {
 
 public:
+	//Creates the generator with the given acceleration.
+	GravityForce(const glm::vec3 gravity) : gravity(gravity) {};
+	GravityForce(const float& planetMass, const float& planetRadius) : gravity(glm::vec3(0, -G * planetMass / planetRadius, 0)) {}
+	static const float G;
+	inline static GravityForce* moonGravity() { return new GravityForce(glm::vec3(0, -1.62, 0)); }
+	inline static GravityForce* EarthGravity() { return new GravityForce(glm::vec3(0, -9.807, 0)); }
+	inline static GravityForce* saturnGravity() { return new GravityForce(glm::vec3(0, -10.44, 0)); }
+	inline static GravityForce* jupiterGravity() { return new GravityForce(glm::vec3(0, -24.79, 0)); }
 
-	/** Creates the generator with the given acceleration. */
-	GravityForce(const glm::vec3 gravity) :gravity(gravity) {};
-
-	/** Applies the gravitational force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody ,float duration);
+	//Applies the gravitational force to the given rigidBody.
+	virtual void updateForce(RigidBody *rigidBody, float duration) override;
 
 	inline const glm::vec3& getGravityAcc() const { return gravity; }
 
-	inline void setGravityAcc(const glm::vec3& gravity){
+	inline void setGravityAcc(const glm::vec3& gravity) {
 		this->gravity = gravity;
 	}
 
 private:
 
-	/** Holds the acceleration due to gravity. */
+	//Holds the acceleration due to gravity.
 	glm::vec3 gravity;
 };
 
@@ -108,118 +100,39 @@ private:
 * A force generator that applies a drag force. One instance
 * can be used for multiple rigidBodies.
 */
-class DragForce : public ForceGenerator{
+class DragForce : public ForceGenerator {
 
 public:
 
-	/** Creates the generator with the given coefficients. */
-	DragForce(float k1, float k2) :k1(k1), k2(k2) {};
+	//Creates the generator with the given coefficient.
+	DragForce(float C) :C(C) {};
 
-	/** Applies the drag force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody ,float duration);
+	//Applies the drag force to the given rigidBody.
+	virtual void updateForce(RigidBody *rigidBody, float duration) override;
 
 private:
 
-	/** Holds the velocity drag coefficient. */
-	float k1;
-
-	/** Holds the velocity squared drag coefficient. */
-	float k2;
-
+	//Holds the velocity drag coefficient.
+	float C;
 };
 
-/**
-* A force generator that applies a spring force.
-*/
-class Spring : public ForceGenerator{
-
-	/** The rigidBody at the other end of the spring. */
-	RigidBody *other;
-
-	glm::vec3* connectionPoint;
-
-	glm::vec3* otherConnectionPoint;
-
-	/** Holds the spring constant. */
-	float springConstant;
-	
-	/** Holds the rest length of the spring. */
-	float restLength;
-
+class MotorJoint : public ForceGenerator {
 public:
-	
-	/** Creates a new spring with the given parameters. */
-	Spring(RigidBody *other, glm::vec3* connectionPoint ,glm::vec3* otherConnectionPoint,
-		float springConstant, float restLength) : springConstant(springConstant), restLength(restLength) {
-		this->other = other;
-		this->connectionPoint = connectionPoint;
-		this->otherConnectionPoint = otherConnectionPoint;
-	};
-	
-	/** Applies the spring force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody, float duration);
+	MotorJoint(const glm::vec3& force, const glm::vec3& pt) : force(force), pt(pt) {}
+	virtual void updateForce(RigidBody *RigidBody, float duration) override;
+protected:
+	//the point where to apply force in the rigid body local space
+	glm::vec3 pt;
+	//the force to be applied
+	glm::vec3 force;
 };
 
-/**
-* A force generator that applies a spring force, where
-* one end is attached to a fixed point in space.
-*/
-class AnchoredSpring : public ForceGenerator{
+class TimedMotorJoint : public MotorJoint {
 public:
-	
-	/** Creates a new spring with the given parameters. */
-	AnchoredSpring(glm::vec3 *anchor ,glm::vec3* connectionPoint,
-		float springConstant, float restLength) : springConstant(springConstant), restLength(restLength){
-		this->anchor = anchor;
-		this->connectionPoint = connectionPoint;
-	}
-	
-	/** Applies the spring force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody ,float duration);
+	TimedMotorJoint(const float& t ,const glm::vec3& force, const glm::vec3 pt) : t(t) ,MotorJoint(force, pt){}
+	virtual void updateForce(RigidBody *RigidBody, float duration) override;
 private:
-	
-	/** The location of the anchored end of the spring. */
-	glm::vec3* anchor;
-
-	glm::vec3* connectionPoint;
-	
-	/** Holds the spring constant. */
-	float springConstant;
-	
-	/** Holds the rest length of the spring. */
-	float restLength;
-};
-
-/**
-* A force generator that applies a spring force, where
-* one end is attached to a fixed point in space.
-*/
-class FakeSpring : public ForceGenerator {
-public:
-
-	/** Creates a new spring with the given parameters. */
-	FakeSpring(glm::vec3 *anchor, const glm::vec3& connectionPoint, glm::vec3* initialPosition,
-		float springConstant ,float damping) : springConstant(springConstant) ,damping(damping) ,connectionPoint(connectionPoint){
-		this->anchor = anchor;
-		this->initialPosition = initialPosition;
-	}
-
-	/** Applies the spring force to the given rigidBody. */
-	virtual void updateForce(RigidBody *rigidBody, float duration);
-private:
-
-	/** The location of the anchored end of the spring. */
-	glm::vec3* anchor;
-
-	glm::vec3* initialPosition;
-
-	glm::vec3 connectionPoint;
-
-	/** Holds the spring constant. */
-	float springConstant;
-
-	/** Holds the damping on the oscillation of the spring. */
-	float damping;
+	float t;
 };
 
 #endif // !ForceGen_H

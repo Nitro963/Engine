@@ -245,12 +245,9 @@ ModelManifest.xml
 .fake/
 
 #OpenGL Libraries
-Dependencies/
 /Engine/pworld.h
 /Engine/pworld.cpp
 /Engine/pcontact.h
 /Engine/pcontact.cpp
 /Engine/Particle.h
 /Engine/Particle.cpp
-/Engine/forceGen.h
-/Engine/forceGen.cpp

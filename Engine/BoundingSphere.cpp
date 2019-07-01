@@ -1,32 +1,15 @@
 #include "BoundingSphere.h"
 
-bool boundingSphere::testSphere(const boundingSphere & b ,CollisionData& info) const{
+bool BoundingSphere::intersect(const BoundingSphere & b) const{
 	// Calculate squared distance between centers
-	glm::vec3 d = c - b.getCenter();
+	glm::vec3 d = c - b.c;
 	float dist2 = glm::dot(d, d);
 	// Spheres intersect if squared distance is less than squared sum of radii
 	float radiusSum = r + b.r;
-	if (dist2 - radiusSum * radiusSum < EPSILON) {
-		info.contactNormal = glm::normalize(d);
-		info.collisionPoint = b.c + d * 0.5f;
-		return true;
-	}
-	return false;
+	return dist2 - radiusSum * radiusSum < EPSILON;
 }
 
-bool boundingSphere::testAABB(const AABB & b) const{
-
-	// Find point p on AABB closest to sphere center
-	point p = b.closestPoint(c);
-
-	// Sphere and AABB intersect if the (squared) distance from sphere
-	// center to point p is less than the (squared) sphere radius
-	glm::vec3 v = p - c;
-	
-	return glm::dot(v ,v) - r * r < EPSILON;
-}
-
-bool boundingSphere::testOBB(const OBB & b , CollisionData& info) const{
+bool BoundingSphere::intersect(const OBB &b) const{
 
 	// Find point p on OBB closest to sphere center
 	point p = b.closestPoint(c);
@@ -34,18 +17,54 @@ bool boundingSphere::testOBB(const OBB & b , CollisionData& info) const{
 	// Sphere and OBB intersect if the (squared) distance from sphere
 	// center to point p is less than the (squared) sphere radius
 	glm::vec3 v = p - c;
-	if (dot(v, v) - r * r < EPSILON) {
-		info.collisionPoint = p;
-		info.contactNormal = glm::normalize(p - c);
-		info.penetrationDepth = 0;
-		return true;
-	}
-	return false;
+	return dot(v, v) - r * r < EPSILON;
 }
 
-point boundingSphere::closestPoint(const point & p){
+CollisionManifold BoundingSphere::findCollisionFeatures(const BoundingSphere & b) const{
+	CollisionManifold res;
+	res.colliding = intersect(b);
+	if (!res.colliding)
+		return res;
+	glm::vec3 closest_point = closestPoint(b.c);
+	if (glm::dot(closest_point - b.c, closest_point - b.c) < EPSILON2)
+		res.normal = glm::normalize(closest_point - c);
+	else
+		res.normal = glm::normalize(b.c - closest_point);
+	res.depth = r + b.r - glm::length(b.c - c);
+	res.contacts.push_back(closest_point);
+	return res;
+}
+
+CollisionManifold BoundingSphere::findCollisionFeatures(const OBB & b) const{
+	CollisionManifold res;
+	res.colliding = intersect(b);
+	if (!res.colliding)
+		return res;
+	// Find point p on OBB closest to sphere center
+	point p = b.closestPoint(c);
+
+	res.contacts.push_back(p);
+	if (glm::dot(p - c, p - c) > EPSILON2)
+		res.normal = glm::normalize(p - c);
+	else
+		res.normal = glm::normalize(b.c - c);
+	point outsidePoint = c + res.normal * r;//a point on the edge of the sphere in the direction of the normal
+	res.depth = glm::length(p - outsidePoint);
+	return res;
+}
+
+point BoundingSphere::closestPoint(const point & p) const{
 	glm::vec3 n = p - c;
 	if (glm::dot(n, n) - r * r < EPSILON)
 		return p;
-	return n * 0.5f + c;
+	return c + normalize(n) * r;
+}
+
+void BoundingSphere::sync(const point & c){
+	this->c = c;
+}
+
+void BoundingSphere::update(const point & c, float r){
+	this->c = c;
+	this->r = r;
 }

@@ -5,7 +5,7 @@ namespace renderer {
 		this->world_up = up;
 		this->yaw = yaw;
 		this->pitch = pitch;
-		update_camera_vectors();
+		updateCameraVectors();
 	}
 
 	camera::camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
@@ -13,13 +13,13 @@ namespace renderer {
 		this->world_up = glm::vec3(upX, upY, upZ);
 		this->yaw = yaw;
 		this->pitch = pitch;
-		update_camera_vectors();
+		updateCameraVectors();
 	}
-	glm::mat4 camera::get_view_matrix() {
+	glm::mat4 camera::getViewMatrix() {
 		return glm::lookAt(position, position + Front, Up);
 	}
 
-	void camera::process_keyboard(Camera_Movement direction, float deltaTime) {
+	void camera::processKeyboard(Camera_Movement direction, float deltaTime) {
 		float velocity = MovementSpeed * deltaTime;
 		if (direction == FORWARD)
 			position += Front * velocity;
@@ -33,7 +33,7 @@ namespace renderer {
 	}
 
 
-	void camera::process_mouse_movement(float xoffset, float yoffset, bool constrainPitch) {
+	void camera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 		xoffset *= MouseSensitivity;
 		yoffset *= MouseSensitivity;
 
@@ -49,10 +49,10 @@ namespace renderer {
 		}
 
 		// Update Front, Right and Up Vectors using the updated Euler angles
-		update_camera_vectors();
+		updateCameraVectors();
 	}
 
-	void camera::process_mouse_scroll(float yoffset) {
+	void camera::processMouseScroll(float yoffset) {
 		if (Zoom >= 1.0f && Zoom <= 45.f)
 			Zoom -= yoffset;
 		if (Zoom <= 1.0f)
@@ -61,7 +61,7 @@ namespace renderer {
 			Zoom = 45.0f;
 	}
 
-	void camera::update_camera_vectors() {
+	void camera::updateCameraVectors() {
 		// Calculate the new Front vector
 		glm::vec3 front;
 		front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));

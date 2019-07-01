@@ -6,6 +6,7 @@
 #include "glm\gtc\matrix_inverse.hpp"
 
 #include <vector>
+#include <memory>
 
 #include "vertexbuffer.h"
 #include "vertexarray.h"
@@ -15,207 +16,230 @@
 #include "BoundingSphere.h"
 #include "Plane.h"
 #include "texture.h"
+#include "Test.h"
 
-inline glm::mat3 star(const glm::vec3 ve) {
-	glm::mat3 m(0.f);
-	m[0][1] = -ve.z;
-	m[0][2] = ve.y;
-	m[1][0] = ve.z;
-	m[1][2] = -ve.x;
-	m[2][0] = -ve.y;
-	m[2][1] = ve.x;
-	return m;
-}
+#define VELOCITYLIMIT 1e-4
+
+struct Material {
+	float shininess;
+	float epsilon;
+	float mu;
+	float muDynamic;
+	Material() : shininess(32), epsilon(0.7), mu(0.5), muDynamic(0.3) {}
+	Material(const float& shininess, const float& epsilon, const float& mu) : shininess(shininess), epsilon(epsilon), mu(mu) {}
+};
 
 class RigidBody {
-protected:
-	glm::vec3 position;
-	glm::fquat orientation;
-	glm::vec3 linearMomentum;
-	glm::vec3 angularMomentum;
-
-	glm::mat3 invTensor;
-	glm::mat3 rotation;
-	glm::mat3 rotationT;
-	glm::vec3 velocity;
-	glm::vec3 omega;
-
-	//constant variable
-	const glm::mat3 tensorBody;
-	const glm::mat3 invTensorBody;
-	const float invMass;
-
-	glm::vec3 forceAccum;
-	glm::vec3 torqueAccum;
 public:
 
-	RigidBody(const float mass, const glm::mat3 tensorBody, const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
+	static float damping;
+
+	RigidBody(const float mass, const glm::mat3 tensorBody, const Material& bodyMaterial = Material(), const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
 
 	void integrate(float duration);
 
-	void calcDerivedQuantities();
+	void syncColliders();
 
-	//point is given in local space
-	virtual void applyForce(const glm::vec3& point, const glm::vec3& force);
+	virtual void applyImpulse(const glm::vec3& impulse, const glm::vec3& impulsiveTorque);
 
-	void applyForce(const glm::vec3& force);
+	void applyImpulse(const glm::vec3& impulse);
 
-	point transformWorld(const point& pt) const;
+	point transform(const point& pt) const;
 
-	point transformLocal(const point& pt) const;
-
-	inline void clearAccum() { forceAccum[0] = forceAccum[1] = forceAccum[2] = torqueAccum[0] = torqueAccum[1] = torqueAccum[2] = 0; }
+	point transformInverse(const point& pt) const;
 
 	inline const glm::vec3& getPosition() const { return position; }
 
 	inline const glm::mat3& getRotation() const { return rotation; }
 
-	inline const glm::mat3& getRotationT() const { return rotationT; }
-
 	inline const glm::vec3& getAngularVelocity() const { return omega; }
 
 	inline const glm::vec3& getVelocity() const { return velocity; }
 
-	inline const glm::vec3& getAngularMomentum() const { return angularMomentum; }
+	inline const Material& getMaterial() const { return bodyMaterial; }
 
-	inline const glm::vec3& getLinearMomentum() const { return linearMomentum; }
+	//inline const glm::vec3& getAngularMomentum() const { return angularMomentum; }
+
+	//inline const glm::vec3& getLinearMomentum() const { return linearMomentum; }
 
 	inline const glm::fquat& getOrientation() const { return orientation; }
+
+	inline const std::unique_ptr<BoundingSphere>& const getCollider1() { return collider1; }
+
+	inline const std::unique_ptr<OBB>& const getCollider2() { return collider2; }
+
 	//point in world space
-	const glm::vec3& getParticleVelocity(const glm::vec3& point) const {
-		return velocity + glm::cross(omega, transformWorld(point));
+	const glm::vec3 getParticleVelocity(const glm::vec3& point) const {
+		return velocity + glm::cross(omega, transform(point));
 	}
-	
-	inline const float getInverseMass() const{ return invMass; }
+
+	inline const float getInverseMass() const { return invMass; }
 
 	inline const float getMass() const { return 1 / invMass; }
 
 	inline const glm::mat3& getInverseTensor() const { return invTensor; }
 
-	inline void setAngularMomentum(const glm::vec3& L) { angularMomentum = L; }
+	inline void translate(const glm::vec3& translation) { position += translation; }
 
-	inline void setLinearMomentum(const glm::vec3& P) { linearMomentum = P; }
+	inline void rotate(const glm::fquat& rotation) { orientation = rotation * orientation; }
 
-	inline void setVelocity(const glm::vec3& V) { velocity = V; }
+	inline void setPosition(const glm::vec3& position) {
+		this->position = position;
+		syncColliders();
+	}
 
-	inline void setAngularVelocity(const glm::vec3& O) { omega = O; }
+	inline void setVelocity(const glm::vec3& velocity) {
+		this->velocity = velocity;
+	}
+
+	inline void setAngularVelocity(const glm::vec3& omega) {
+		this->omega = omega;
+	}
+
+	inline void setOrientation(const glm::fquat& orientation) {
+		this->orientation = orientation;
+		calcDerivedQuantities();
+	}
+
+	inline void setMaterial(const Material& bodyMaterial) {
+		this->bodyMaterial = bodyMaterial;
+	}
+
+	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const = 0;
+
+	inline virtual const bool contains(const point& p) const = 0;
+
+	inline void kill() { alive = 0; }
+
+	inline bool isAwake() const { return awake; }
+
+	inline bool isDead() const { return !alive; }
+
+	virtual void render() const {};
+
+	friend void resolveContact(struct ContactData* contact);
+
+	friend void resolveInterpentration(struct ContactData* contact);
+protected:
+	glm::vec3 position;
+	glm::fquat orientation;
+	glm::vec3 velocity;
+	glm::vec3 omega;
+	//glm::vec3 linearMomentum;
+	//glm::vec3 angularMomentum;
+
+	glm::mat3 invTensor;
+	glm::mat3 rotation;
+
+	//constant variable
+	glm::mat3 tensorBody;
+	glm::mat3 invTensorBody;
+	float invMass;
+	Material bodyMaterial;
+
+	//int colliderType;
+	std::unique_ptr<BoundingSphere> collider1;
+	std::unique_ptr<OBB> collider2;
+
+	bool awake;
+	bool alive;
+
+	void calcDerivedQuantities();
 };
 
-struct Contact {
-	RigidBody *a  // body containing vertex 
-		, *b; // body containing face
-	glm::vec3 point, // world-space vertex position
-		normal, // outwards point face normal
-		edgeA, //edge direction of A
-		edgeB; //edge dirction of B
-	bool vertexFace; //true if vertex/face contact
-};
+inline bool isDead(RigidBody*& body) {
+	return body->isDead();
+}
 
-class SolidCuboid;
-class SolidSphere : public RigidBody{
-private:
-	const float radius;
-	
-	inline static glm::mat3 generateTensor(float mass, float radius);
-	static void generateVertices();
-
-	static std::vector<float> vertices;
-	static std::vector<uint32_t> indices;
-
-	static renderer::vertexbuffer* VBO;
-	static renderer::vertexarray* VAO;
-	static renderer::indexbuffer* IBO;
+class SolidSphere : public RigidBody {
 public:
-	SolidSphere(const float mass, const float radius, const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f) ,glm::vec3(0 ,0 ,1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
-	
-	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
-	
+	SolidSphere(const float mass, const float radius, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
+
 	inline float getRadius() { return radius; }
 
-	bool isColliding(SolidSphere* other ,Contact* contactData);
+	inline void update(float mass, float radius) {
+		invMass = 1 / mass;
+		tensorBody = generateTensor(mass, radius);
+		invTensorBody = glm::inverse(tensorBody);
+		this->radius = radius;
+		collider1->update(position, radius);
+	}
 
-	bool isColliding(SolidCuboid* other, Contact* contactData);
+	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const override {
+		glm::mat4 model = glm::scale(glm::identity<glm::mat4>(), scaler);
+		model = glm::translate(model, position) * glm::mat4(rotation);
+		model = glm::scale(model, glm::vec3(radius));
+		return model;
+	};
+	inline virtual const bool contains(const glm::vec3& p) const override {
+		if (glm::dot(p, p) - radius * radius > EPSILON2)
+			return false;
+		return true;
+	}
+	virtual void render() const override;
+	static void generateVertices();
 
-	void draw();
+private:
+	float radius;
+
+	inline static glm::mat3 generateTensor(float mass, float radius);
+
+	static std::vector<float> vertices;
+	static std::vector<unsigned int> indices;
+	std::unique_ptr<renderer::vertexbuffer> VBO;
+	std::unique_ptr<renderer::vertexarray> VAO;
+	std::unique_ptr<renderer::indexbuffer> IBO;
 };
 
-class SolidCuboid : public RigidBody{
+class SolidCuboid : public RigidBody {
+public:
+	SolidCuboid(const float mass, const glm::vec3& extens, const Material& bodyMaterial = Material(), const glm::vec3 position = glm::vec3(), const glm::fquat orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3 velocity = glm::vec3(), const glm::vec3 omega = glm::vec3());
+
+	inline const glm::vec3& getExtents() { return extents; }
+
+	inline void update(float mass, const glm::vec3 extents) {
+		invMass = 1 / mass;
+		tensorBody = generateTensor(mass, extents);
+		invTensorBody = glm::inverse(tensorBody);
+		this->extents = extents;
+		collider2->update(position, rotation, extents * 0.5f);
+	}
+
+	inline virtual const glm::mat4 getModel(const glm::vec3& scaler) const override {
+		glm::mat4 model = glm::scale(glm::identity<glm::mat4>(), scaler);
+		model = glm::translate(model, position) * glm::mat4(rotation);
+		model = glm::scale(model, extents);
+		return model;
+	};
+	inline virtual const bool contains(const glm::vec3& p) const override {
+		glm::vec3 diff = glm::clamp(p, -extents * 0.5f, extents * 0.5f) - p;
+		if (glm::dot(diff, diff) > EPSILON2)
+			return false;
+		return true;
+	}
+	virtual void render() const override;
+
 private:
 	glm::vec3 extents;
 	inline static glm::mat3 generateTensor(float mass, const glm::vec3& extents);
 
 	static std::vector<float> vertices;
-	static std::vector<uint32_t> indices;
-
-	static renderer::vertexbuffer* VBO;
-	static renderer::vertexarray* VAO;
-	static renderer::indexbuffer* IBO;
-public:
-	SolidCuboid(const float mass, const glm::vec3& extens, const glm::vec3& position = glm::vec3(), const glm::fquat& orientation = glm::angleAxis(glm::radians(0.f), glm::vec3(0, 0, 1)), const glm::vec3& velocity = glm::vec3(), const glm::vec3& omega = glm::vec3());
-
-	virtual void applyForce(const glm::vec3& point, const glm::vec3& force) override;
-
-	inline const glm::vec3& getExtents() { return extents; }
-
-	//bool isColliding(const SolidCuboid& other);
-
-	void draw();
+	static std::vector<unsigned int> indices;
+	std::unique_ptr<renderer::vertexbuffer> VBO;
+	std::unique_ptr<renderer::vertexarray> VAO;
+	std::unique_ptr<renderer::indexbuffer> IBO;
 };
 
-class Floor : public RigidBody{
-private:
-	std::vector<float> vertices;
-	std::vector<uint32_t> indices;
-	renderer::vertexbuffer* VBO;
-	renderer::vertexarray* VAO;
-	renderer::indexbuffer* IBO;
-	
-	plane collider;
+struct ContactData {
+	RigidBody* A;
+	RigidBody* B;
+	const CollisionManifold* M;
 
-	static Floor* object;
-	
-	inline static glm::mat4 generateTensor() { glm::mat4 ret(0.f); ret[0][0] = ret[1][1] = ret[2][2] = 1e9 + 9; return ret; }
-	Floor(const glm::vec3& position = glm::vec3(0 ,-5 ,0)) :RigidBody(1e9 + 9, generateTensor(), position) ,collider(point(200 ,-10 ,200) ,point(-200 ,-10 ,-200) ,point(-200 ,-10 ,200)){
-		
-		vertices = {
-			//positions                 texcoord
-			-200.f, -10.f, -200.f,			0 ,0,
-			200.f, -10.f, -200.f,			1 ,0,
-			200.f, -10.f, 200.f,			1 ,1,
-			-200.f, -10.f, 200.f,			0 ,1
-		};
-		indices = {
-			0 ,1 ,2,
-			2 ,3 ,0
-		};
-		VBO = new renderer::vertexbuffer(&vertices[0], sizeof(float) * vertices.size());
-		IBO = new renderer::indexbuffer(&indices[0], indices.size());
-		renderer::vertexbufferlayout layout;
-		layout.push<float>(3);
-		layout.push<float>(2);
-		VAO = new renderer::vertexarray();
-		VAO->addbuffer(*VBO, layout);
-		
-	}
-public:
-	static Floor* getInstance();
-
-	inline void draw() {
-		VAO->bind();
-		IBO->bind();
-		VAO->bind();
-		IBO->bind();
-		GLCall(glDrawElements(GL_TRIANGLES, IBO->getcount(), GL_UNSIGNED_INT, NULL));
-		VAO->unbind();
-		IBO->unbind();
-	}
-	
-	bool isColliding(SolidSphere* other, Contact* contactData);
-
-	bool isColliding(SolidCuboid* other, Contact* contactData);
+	ContactData(RigidBody* A, RigidBody* B, const CollisionManifold* M) : A(A), B(B), M(M) {}
+	~ContactData() { delete M; }
 };
 
-bool isColliding(Contact* c);
+void resolveContact(ContactData* contact);
 
-void handelCollision(Contact *c, float epsilon);
+void resolveInterpentration(ContactData* contact);
 #endif // !RIGID_BODY_H

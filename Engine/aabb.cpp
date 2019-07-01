@@ -1,33 +1,45 @@
 #include "AABB.h"
+#include "OBB.h"
+#include "BoundingSphere.h"
 
-bool AABB::testAABB(const AABB & b) const{
-	
-	if (glm::abs(c.x - b.getCenter().x) > getXRadius() + b.getXRadius()) return false;
-	if (glm::abs(c.y - b.getCenter().y) > getYRadius() + b.getYRadius()) return false;
-	if (glm::abs(c.z - b.getCenter().z) > getZRadius() + b.getZRadius()) return false;
+//bool AABB::intersect(const AABB & b) const{
+//	
+//	if (glm::abs(c.x - b.c.x) > halfExtents.x + b.halfExtents.x) return false;
+//	if (glm::abs(c.y - b.c.y) > halfExtents.y + b.halfExtents.y) return false;
+//	if (glm::abs(c.z - b.c.z) > halfExtents.z + b.halfExtents.z) return false;
+//
+//	return true;
+//}
 
+bool AABB::contains(const point & p) const{
+	glm::vec3 mn = getMin();
+	glm::vec3 mx = getMax();
+	return (p.x > mn.x && p.x < mx.x &&
+		p.y > mn.y && p.y < mx.y &&
+		p.z > mn.z && p.z < mx.z);
+}
+
+bool AABB::contains(const OBB& b) const{
+	std::vector<point> vertices = b.getVertices();
+	for (const auto& v : vertices) {
+		if (!contains(v))
+			return false;
+	}
 	return true;
 }
 
-// Transform AABB by the matrix m and translation t,
-// find maximum extents, and store result into a new AABB.
-AABB AABB::updateAABB(const glm::mat3x3& rotation,const glm::vec3& translation) const{
-	point c;
-	glm::vec3 r;
+bool AABB::contains(const BoundingSphere & s) const{
+	glm::vec3 axis[]{
+		glm::vec3(1 ,0 ,0) ,glm::vec3(0 ,1 ,0) ,glm::vec3(0 ,0 ,1)
+	};
 	for (int i = 0; i < 3; i++) {
-		c[i] = translation[i];
-		r[i] = 0.0f;
-		for (int j = 0; j < 3; j++) {
-			c[i] += rotation[i][j] * this->c[j];
-			r[i] += glm::abs(rotation[i][j]) * this->r[j];
-		}
+		point p = s.c + s.r * axis[i];
+		point q = s.c - s.r * axis[i];
+		if (!contains(p))
+			return false;
+		if (!contains(q))
+			return false;
 	}
-	return AABB(c, r);
+	return true;
 }
 
-// Given point p, return the point q on or in the AABB that is closest to p
-point AABB::closestPoint(const point& p) const{
-	// For each coordinate axis, if the point coordinate value is
-	// outside box, clamp it to the box, else keep it as is
-	return glm::clamp(p ,c - r ,c + r);
-}
