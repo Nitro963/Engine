@@ -1,5 +1,5 @@
 # Genie-Engine-
-Genie Engine is an impulse based physics engine written in c++ and using Modern Open GL version 3.3.
+Genie Engine is an impulse based physics engine written in c++ and uses Modern Open GL version 3.3.
 
 The current engine has a rigid body simulator with the following features:
 1. Sphere-Shpere collisions.
@@ -10,7 +10,7 @@ The current engine has a rigid body simulator with the following features:
 6. Fixed joints: Fix the rigid body at a specific point in world space.
 7. Gravity applied separately.
 
-The simulator runs in real time and you have full control to the rigid body data:
+The simulator runs in real time and you have full control on the rigid body data:
 
 1. Mass.
 2. Dimensions.
